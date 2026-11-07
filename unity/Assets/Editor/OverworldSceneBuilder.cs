@@ -13,6 +13,7 @@ public static class OverworldSceneBuilder
     public static void Build()
     {
         EnsureFolder("Assets/Scenes");
+        EnsureFolder("Assets/Materials");
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         RenderSettings.ambientLight = new Color(0.32f, 0.36f, 0.46f);
         RenderSettings.fog = true;
@@ -105,7 +106,7 @@ public static class OverworldSceneBuilder
 
     private static void EnsureFolder(string path)
     {
-        if (!AssetDatabase.IsValidFolder(path)) AssetDatabase.CreateFolder("Assets", "Scenes");
+        if (!AssetDatabase.IsValidFolder(path)) AssetDatabase.CreateFolder("Assets", path.Substring("Assets/".Length));
     }
 
     private static Material Mat(string name, Color color)
@@ -113,6 +114,10 @@ public static class OverworldSceneBuilder
         Shader shader = Shader.Find("Standard");
         if (shader == null) shader = Shader.Find("Unlit/Color");
         var material = new Material(shader) { name = name, color = color };
+        string assetPath = "Assets/Materials/" + name.Replace(" ", "_") + ".mat";
+        var existing = AssetDatabase.LoadAssetAtPath<Material>(assetPath);
+        if (existing != null) { existing.color = color; EditorUtility.SetDirty(existing); Object.DestroyImmediate(material); return existing; }
+        AssetDatabase.CreateAsset(material, assetPath);
         return material;
     }
 
