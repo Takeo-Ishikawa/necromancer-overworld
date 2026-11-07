@@ -31,3 +31,16 @@ Abra a execução em Actions e compartilhe a etapa que falhou e o trecho relevan
 ## Validação pendente
 
 O código foi enviado ao GitHub, mas ainda não há confirmação de build concluído, APK instalado ou desempenho em dispositivo real. Não considerar a versão 0.1 pronta para distribuição antes desse teste.
+
+
+## Falha de autenticação Unity HTTP 401 (run 42415922159)
+
+O diagnóstico confirmou que os secrets `UNITY_LICENSE`, `UNITY_EMAIL` e `UNITY_PASSWORD` estavam presentes, mas o GameCI tentou autenticar pela Unity Cloud, recebeu HTTP 401 e falhou após cinco tentativas. Não houve compilação dos scripts do jogo.
+
+Em `Settings > Secrets and variables > Actions` deste repositório, confira novamente o e-mail e a senha da conta Unity associados à licença. O conteúdo dos secrets não é mostrado após salvar, então substitua os valores se estiverem desatualizados. Não envie senhas ou licença no chat.
+
+Se a conta utiliza outro método de autenticação ou a Unity não aceita login por senha no CI, consulte as instruções atuais de licenciamento do GameCI/Unity e configure um método compatível com seu tipo de licença. A mera presença de `UNITY_LICENSE` não garante ativação nesse workflow. No caso de licença serial, configure `UNITY_SERIAL`, `UNITY_EMAIL` e `UNITY_PASSWORD` juntos.
+
+Depois de ajustar as credenciais, execute novamente o workflow. A checagem preliminar agora detecta secrets ausentes, mas não pode validar senhas sem tentar a autenticação na Unity.
+
+**Observação:** neste run os secrets de assinatura persistente também estavam incompletos, então mesmo com a licença corrigida as atualizações de APK ainda não terão assinatura estável.
