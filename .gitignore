@@ -15,3 +15,7 @@
 *.aab
 *.keystore
 *.jks
+
+# CI credentials (never commit)
+unity/.preview-build.json
+unity/.preview-keystore.jks
