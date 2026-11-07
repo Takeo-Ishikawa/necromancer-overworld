@@ -1,0 +1,97 @@
+name: Necromancer Overworld Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'unity/**'
+      - '.github/workflows/android-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: overworld-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Unity licensing
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        run: |
+          if [ -z "$UNITY_LICENSE" ] && [ -z "$UNITY_SERIAL" ]; then
+            echo "::error::Add UNITY_LICENSE or UNITY_SERIAL in this repository's Actions secrets."
+            exit 1
+          fi
+
+      - name: Prepare optional stable Android signing
+        shell: bash
+        env:
+          KEY_B64: ${{ secrets.PREVIEW_KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.PREVIEW_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PREVIEW_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.PREVIEW_KEY_PASSWORD }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [ -n "$KEY_B64" ] && [ -n "$STORE_PASS" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASS" ]; then
+            printf '%s' "$KEY_B64" | base64 --decode > unity/.preview-keystore.jks
+            keytool -list -keystore unity/.preview-keystore.jks -storepass "$STORE_PASS" -alias "$KEY_ALIAS" >/dev/null
+            python3 - <<'PY'
+          import json, os
+          with open("unity/.preview-build.json", "w") as f:
+              json.dump({"keystorePassword": os.environ["STORE_PASS"], "keyPassword": os.environ["KEY_PASS"], "alias": os.environ["KEY_ALIAS"], "runNumber": int(os.environ["RUN_NUMBER"])}, f)
+          PY
+            echo "Persistent signing enabled."
+          else
+            echo "::warning::Stable signing secrets incomplete: using Unity debug signing. Future APK updates may require reinstalling."
+            python3 - <<'PY'
+          import json, os
+          with open("unity/.preview-build.json", "w") as f:
+              json.dump({"runNumber": int(os.environ["RUN_NUMBER"])}, f)
+          PY
+          fi
+
+      - name: Build Android with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: unity
+          targetPlatform: Android
+          buildMethod: OverworldAndroidBuild.BuildAndroid
+          androidExportType: androidPackage
+          buildsPath: build
+          versioning: None
+
+      - name: Verify APK and record size
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/Android/necromancer-overworld-preview.apk
+          echo "### Necromancer Overworld Preview" >> "$GITHUB_STEP_SUMMARY"
+          stat -c 'APK: %n — %s bytes' build/Android/necromancer-overworld-preview.apk | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: necromancer-overworld-preview
+          path: build/Android/necromancer-overworld-preview.apk
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Remove temporary signing files
+        if: always()
+        run: rm -f unity/.preview-keystore.jks unity/.preview-build.json
