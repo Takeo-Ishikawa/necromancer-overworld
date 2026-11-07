@@ -6,6 +6,15 @@ using UnityEngine;
 
 public static class OverworldAndroidBuild
 {
+    [Serializable]
+    private class PreviewConfig
+    {
+        public string keystorePassword;
+        public string keyPassword;
+        public string alias;
+        public int runNumber;
+    }
+
     public static void BuildAndroid()
     {
         OverworldSceneBuilder.Build();
@@ -18,11 +27,13 @@ public static class OverworldAndroidBuild
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
 
-        string keystore = Environment.GetEnvironmentVariable("PREVIEW_KEYSTORE_PATH");
-        string password = Environment.GetEnvironmentVariable("PREVIEW_KEYSTORE_PASSWORD");
-        string alias = Environment.GetEnvironmentVariable("PREVIEW_KEY_ALIAS");
-        string keyPassword = Environment.GetEnvironmentVariable("PREVIEW_KEY_PASSWORD");
-        if (!string.IsNullOrEmpty(keystore) && !string.IsNullOrEmpty(password) &&
+        string configPath = Path.Combine(Directory.GetCurrentDirectory(), ".preview-build.json");
+        PreviewConfig config = File.Exists(configPath) ? JsonUtility.FromJson<PreviewConfig>(File.ReadAllText(configPath)) : null;
+        string keystore = Path.Combine(Directory.GetCurrentDirectory(), ".preview-keystore.jks");
+        string password = config != null ? config.keystorePassword : null;
+        string alias = config != null ? config.alias : null;
+        string keyPassword = config != null ? config.keyPassword : null;
+        if (File.Exists(keystore) && !string.IsNullOrEmpty(password) &&
             !string.IsNullOrEmpty(alias) && !string.IsNullOrEmpty(keyPassword))
         {
             PlayerSettings.Android.useCustomKeystore = true;
@@ -52,6 +63,12 @@ public static class OverworldAndroidBuild
 
     private static int GetRunNumber()
     {
+        string configPath = Path.Combine(Directory.GetCurrentDirectory(), ".preview-build.json");
+        if (File.Exists(configPath))
+        {
+            var config = JsonUtility.FromJson<PreviewConfig>(File.ReadAllText(configPath));
+            if (config != null && config.runNumber > 0) return config.runNumber;
+        }
         string value = Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER");
         int number;
         return int.TryParse(value, out number) ? number : 1;
