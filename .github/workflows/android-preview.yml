@@ -21,13 +21,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Unity licensing
+      - name: Check Unity licensing configuration
+        shell: bash
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
-          if [ -z "$UNITY_LICENSE" ] && [ -z "$UNITY_SERIAL" ]; then
-            echo "::error::Add UNITY_LICENSE or UNITY_SERIAL in this repository's Actions secrets."
+          set -euo pipefail
+          if [ -n "$UNITY_SERIAL" ]; then
+            if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+              echo "::error::UNITY_SERIAL requires UNITY_EMAIL and UNITY_PASSWORD to activate in GameCI."
+              exit 1
+            fi
+            echo "Unity serial license configuration detected."
+          elif [ -n "$UNITY_LICENSE" ]; then
+            if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+              echo "::error::UNITY_LICENSE is present, but GameCI's Personal activation needs UNITY_EMAIL and UNITY_PASSWORD. Verify these secrets in this repository."
+              exit 1
+            fi
+            echo "::warning::A ULF is configured, but the current GameCI run may still attempt online Personal activation. GitHub run 42415922159 failed with Unity login HTTP 401. Verify the Unity account credentials and any required account authorization."
+          else
+            echo "::error::Configure a Unity license: UNITY_LICENSE, or UNITY_SERIAL with account credentials."
             exit 1
           fi
 
