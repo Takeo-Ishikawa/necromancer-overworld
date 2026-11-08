@@ -9,7 +9,6 @@ public static class OverworldCaveEntrance
         var rock = MaterialFor("Cave basalt", new Color(0.15f, 0.17f, 0.21f));
         var path = MaterialFor("Cave path", new Color(0.26f, 0.26f, 0.29f));
         var accent = MaterialFor("Cave crystal", new Color(0.22f, 0.55f, 0.68f));
-        var dark = MaterialFor("Cave shadow", new Color(0.09f, 0.10f, 0.14f));
 
         var root = new GameObject("03 - Cave entrance (modular)").transform;
         var structure = Group(root, "Walkable corridor");
@@ -33,9 +32,6 @@ public static class OverworldCaveEntrance
         Crystal(new Vector3(3.1f, 0f, -19.0f), accent, decorations);
         Crystal(new Vector3(-3.1f, 0f, -23.0f), accent, decorations);
 
-        // Deliberately sealed at this milestone: no accidental fall off the playable map.
-        Cube("Temporary end barrier", new Vector3(0f, 1.35f, -25.4f), new Vector3(7.3f, 2.7f, 0.8f), dark, structure, true);
-        Cube("Barrier warning stripe", new Vector3(0f, 1.0f, -24.92f), new Vector3(5.2f, 0.12f, 0.08f), accent, decorations, false);
     }
 
     private static Transform Group(Transform parent, string name)
