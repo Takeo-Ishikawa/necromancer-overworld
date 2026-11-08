@@ -6,7 +6,7 @@ Turnaround enviado pelo usuário em 2026-11-07: homem adulto, corpo musculoso co
 ## Estado de entrega
 Primeira etapa **em andamento**: `tools/blender/generate_necromancer_base.py` cria um *blockout* 3D editável em Blender 4.x e exporta FBX. Corpo, cabelo, roupa e acessórios são objetos separados. **Não é um modelo final fiel ao turnaround**: os volumes são simplificados e ainda faltam escultura anatômica, rosto detalhado, cabelo refinado, topologia adequada à deformação, UV, texturas e esqueleto.
 
-A automação GitHub Actions `Necromancer Character 3D Preview` executa Blender em ambiente isolado, exporta o `.blend` e `.fbx`, renderiza vistas frontal, lateral e posterior e disponibiliza os arquivos como artifact. **A existência do workflow não comprova sua execução bem-sucedida**: verificar o resultado em Actions. Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
+A automação GitHub Actions `Necromancer Character 3D Preview` executa Blender em ambiente isolado, exporta o `.blend` e `.fbx`, renderiza vistas frontal, lateral e posterior e disponibiliza os arquivos como artifact. As execuções iniciais falharam: o Blender 4.0.2 do runner não encontrava `numpy` para exportar FBX, e o renderizador Workbench abortou no Linux headless. Foi adicionado `python3-numpy`/PYTHONPATH e o renderizador foi trocado por Cycles CPU. **Essas correções ainda precisam ser validadas em nova execução.** Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
 
 ## Como gerar a base
 Instalar Blender 4.x e executar a partir da raiz do repositório:
