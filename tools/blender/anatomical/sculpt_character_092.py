@@ -362,12 +362,23 @@ for sign,label in ((-1,"L"),(1,"R")):
 
 # Bring life to the existing sculpted eyes without replacing its face topology.
 def front_hit(x,z):
-    # body.ray_cast is local-space. Translate ray and hit back to world-space.
-    from_world=body.matrix_world.inverted_safe()
-    o=from_world@Vector((x,-.6,z))
-    d=(from_world.to_3x3()@Vector((0,1,0))).normalized()
-    ok,loc,no,index=body.ray_cast(o,d)
-    return (body.matrix_world@loc) if ok else None
+    # The CC0 asset has separate eye objects: raycast only the body would
+    # bury iris geometry behind the original eyeballs, making eyes blank.
+    found=[]
+    for source_ob in base["selected_objects"]:
+        if source_ob.type!="MESH":
+            continue
+        from_world=source_ob.matrix_world.inverted_safe()
+        o=from_world@Vector((x,-.80,z))
+        d=(from_world.to_3x3()@Vector((0,1,0))).normalized()
+        ok,loc,no,index=source_ob.ray_cast(o,d)
+        if ok:
+            found.append((source_ob.matrix_world@loc,source_ob.name))
+    if not found:
+        return None
+    front,mesh_name=min(found,key=lambda pair:pair[0].y)
+    print("IRIS_ANCHOR",x,z,mesh_name,tuple(front),flush=True)
+    return front
 
 def eye_disc(name,x,z,r,mat,depth):
     hit=front_hit(x,z)
