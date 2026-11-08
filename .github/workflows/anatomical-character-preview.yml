@@ -1,4 +1,4 @@
-name: Necromancer 0.9.1 Official CC0 Anatomy
+name: Necromancer 0.9.2 CC0 Sculpt and Styling
 
 on:
   workflow_dispatch:
@@ -45,10 +45,10 @@ jobs:
           mkdir -p /opt/blender-4.5.15
           tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
 
-      - name: Import official male mesh, sculpt and render
+      - name: Sculpt official male topology, tailor accessories and render
         run: |
           /opt/blender-4.5.15/blender --version
-          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/anatomical/import_sculpt_091.py
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/anatomical/sculpt_character_092.py
 
       - name: Validate source and generated assets
         run: |
@@ -57,22 +57,32 @@ jobs:
           p=pathlib.Path("tools/blender/anatomical/output")
           meta=json.loads((p/"source_metadata.json").read_text())
           assert meta["license"]=="CC0-1.0"
-          assert meta["vertices"]>1000
+          assert meta["base_vertices"]>10000
+          assert meta["base_faces"]>10000
+          assert meta["body_vertices_after_sculpt"]==meta["base_vertices"]
+          assert meta["body_faces_after_sculpt"]==meta["base_faces"]
+          assert meta["hair_strand_count"]>=120
+          assert meta["trouser_quads"]>1000
+          assert meta["bracer_quads"]>80
+          assert meta["scalp_quads"]>50
+          assert meta["embroidered_curve_count"]>=4
+          assert meta["rigged"] is False and meta["unity_character_replaced"] is False
           for filename in (
-            "necromancer_anatomy_091.blend","necromancer_anatomy_091.fbx",
-            "anatomy_front.png","anatomy_side.png","anatomy_back.png",
-            "anatomy_threequarter.png","asset_catalog.json"
+            "necromancer_character_092.blend","necromancer_character_092.fbx",
+            "character_front.png","character_side.png","character_back.png",
+            "character_threequarter.png","character_face_front.png",
+            "character_face_threequarter.png","asset_catalog.json"
           ):
             f=p/filename
             assert f.exists() and f.stat().st_size>0,filename
           print("VALIDATED:",meta["asset_file"],meta["asset_datablock"],
-                "vertices:",meta["vertices"],"faces:",meta["faces"])
+                "vertices:",meta["base_vertices"],"faces:",meta["base_faces"])
           PY
 
-      - name: Upload anatomical Blender/FBX with provenance and four views
+      - name: Upload anatomical 0.9.2 Blender/FBX and six real views
         uses: actions/upload-artifact@v4
         with:
-          name: necromancer-anatomical-0-9-1-cc0-preview
+          name: necromancer-anatomical-0-9-2-cc0-preview
           path: |
             tools/blender/anatomical/output/*.blend
             tools/blender/anatomical/output/*.fbx

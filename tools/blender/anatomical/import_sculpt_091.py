@@ -176,86 +176,89 @@ for ob in selected_objects:
     if ob.type not in {"MESH"}:
         ob.hide_render=True
 
-# Save model and export real topology in FBX.
-metadata={
-    "source":SOURCE,
-    "license":LICENSE,
-    "bundle_version":"1.4.1",
-    "blender_version":bpy.app.version_string,
-    "asset_file":entry["file"],
-    "asset_datablock":asset_name,
-    "asset_kind":kind,
-    "anatomical_object":body.name,
-    "vertices":len(body.data.vertices),
-    "faces":len(body.data.polygons),
-    "height_m":1.90,
-    "topology_source":"Blender Studio Human Base Meshes",
-    "stage":"0.9.1 source import + nondestructive anatomy sculpt, no rig",
-    "known_limitations":"character not yet dressed; silhouette, hair and face pending",
-}
-with open(OUT/"source_metadata.json","w") as f:json.dump(metadata,f,indent=2)
-with open(OUT/"asset_catalog.json","w") as f:json.dump(entries,f,indent=2)
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_anatomy_091.blend"))
-bpy.ops.object.select_all(action="DESELECT")
-for ob in bpy.context.scene.objects:
-    if ob.type=="MESH" and not ob.hide_render and len(ob.data.vertices)>25:
-        ob.hide_set(False)
-        ob.select_set(True)
-if not bpy.context.selected_objects:raise RuntimeError("No visible anatomical meshes for FBX export")
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_anatomy_091.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y"
-)
-
-# Compact Cycles studio setup — no camera tricks, front/side/back genuine views.
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=12
-scene.cycles.use_denoising=False
-for layer in scene.view_layers:
-    if hasattr(layer,"cycles"):
-        layer.cycles.use_denoising=False
-scene.render.resolution_x=620
-scene.render.resolution_y=840
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("Soft charcoal studio")
-world.use_nodes=True
-background=world.node_tree.nodes.get("Background")
-background.inputs["Color"].default_value=(.17,.17,.19,1)
-background.inputs["Strength"].default_value=.75
-scene.world=world
-for name,loc,power,size in (
-    ("Softbox key",(2,-3,4.2),780,4.4),
-    ("Softbox fill",(-3,-1,3.0),320,3.2),
-    ("Rim",(-1,2.4,3.3),480,3.0),
-):
-    lamp=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,lamp)
-    scene.collection.objects.link(ob)
-    ob.location=loc
-    lamp.energy=power
-    lamp.shape="DISK"
-    lamp.size=size
-camdata=bpy.data.cameras.new("Anatomy inspection orthographic")
-cam=bpy.data.objects.new("Anatomy inspection orthographic",camdata)
-scene.collection.objects.link(cam)
-scene.camera=cam
-camdata.type="ORTHO"
-camdata.ortho_scale=2.27
-for name,location in (
-    ("front",(0,-4.5,1.20)),
-    ("side",(4.5,0,1.20)),
-    ("back",(0,4.5,1.20)),
-    ("threequarter",(3.0,-4.0,1.30)),
-):
-    cam.location=location
-    direction=Vector((0,0,1.0))-cam.location
-    cam.rotation_euler=direction.to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("anatomy_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER",scene.render.filepath,flush=True)
-print("COMPLETED CC0 ANATOMICAL BASE import/sculpt/render: ",json.dumps(metadata),flush=True)
+# This CC0 import stage can be reused by the 0.9.2 identity pass.
+if os.environ.get('NECROMANCER_IMPORT_ONLY') != '1':
+    # Save model and export real topology in FBX.
+    metadata={
+        "source":SOURCE,
+        "license":LICENSE,
+        "bundle_version":"1.4.1",
+        "blender_version":bpy.app.version_string,
+        "asset_file":entry["file"],
+        "asset_datablock":asset_name,
+        "asset_kind":kind,
+        "anatomical_object":body.name,
+        "vertices":len(body.data.vertices),
+        "faces":len(body.data.polygons),
+        "height_m":1.90,
+        "topology_source":"Blender Studio Human Base Meshes",
+        "stage":"0.9.1 source import + nondestructive anatomy sculpt, no rig",
+        "known_limitations":"character not yet dressed; silhouette, hair and face pending",
+    }
+    with open(OUT/"source_metadata.json","w") as f:json.dump(metadata,f,indent=2)
+    with open(OUT/"asset_catalog.json","w") as f:json.dump(entries,f,indent=2)
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_anatomy_091.blend"))
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in bpy.context.scene.objects:
+        if ob.type=="MESH" and not ob.hide_render and len(ob.data.vertices)>25:
+            ob.hide_set(False)
+            ob.select_set(True)
+    if not bpy.context.selected_objects:raise RuntimeError("No visible anatomical meshes for FBX export")
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_anatomy_091.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y"
+    )
+    
+    # Compact Cycles studio setup — no camera tricks, front/side/back genuine views.
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=12
+    scene.cycles.use_denoising=False
+    for layer in scene.view_layers:
+        if hasattr(layer,"cycles"):
+            layer.cycles.use_denoising=False
+    scene.render.resolution_x=620
+    scene.render.resolution_y=840
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("Soft charcoal studio")
+    world.use_nodes=True
+    background=world.node_tree.nodes.get("Background")
+    background.inputs["Color"].default_value=(.17,.17,.19,1)
+    background.inputs["Strength"].default_value=.75
+    scene.world=world
+    for name,loc,power,size in (
+        ("Softbox key",(2,-3,4.2),780,4.4),
+        ("Softbox fill",(-3,-1,3.0),320,3.2),
+        ("Rim",(-1,2.4,3.3),480,3.0),
+    ):
+        lamp=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,lamp)
+        scene.collection.objects.link(ob)
+        ob.location=loc
+        lamp.energy=power
+        lamp.shape="DISK"
+        lamp.size=size
+    camdata=bpy.data.cameras.new("Anatomy inspection orthographic")
+    cam=bpy.data.objects.new("Anatomy inspection orthographic",camdata)
+    scene.collection.objects.link(cam)
+    scene.camera=cam
+    camdata.type="ORTHO"
+    camdata.ortho_scale=2.27
+    for name,location in (
+        ("front",(0,-4.5,1.20)),
+        ("side",(4.5,0,1.20)),
+        ("back",(0,4.5,1.20)),
+        ("threequarter",(3.0,-4.0,1.30)),
+    ):
+        cam.location=location
+        direction=Vector((0,0,1.0))-cam.location
+        cam.rotation_euler=direction.to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("anatomy_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER",scene.render.filepath,flush=True)
+    print("COMPLETED CC0 ANATOMICAL BASE import/sculpt/render: ",json.dumps(metadata),flush=True)
+    
