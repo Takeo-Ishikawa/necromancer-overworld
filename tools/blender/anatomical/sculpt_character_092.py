@@ -54,10 +54,10 @@ def material(name, rgb, metal=0.0, rough=0.67):
 skin = material("092 | pale cool ivory skin", (.55, .47, .45), rough=.79)
 pants_mat = material("092 | graphite woven cloth", (.073, .067, .095), rough=.89)
 pants_seam = material("092 | shaded cloth folds", (.055, .053, .074), rough=.88)
-hair_base = material("092 | ash silver hair roots", (.36, .35, .43), rough=.68)
-hair_silver = material("092 | silver smoke hair", (.62, .62, .70), rough=.57)
-hair_lilac = material("092 | subtle lilac hair", (.48, .43, .57), rough=.62)
-hair_shadow = material("092 | deep lavender hair shadow", (.28, .27, .37), rough=.78)
+hair_base = material("092 | ash silver hair roots", (.25, .25, .33), rough=.68)
+hair_silver = material("092 | silver smoke hair", (.43, .43, .51), rough=.57)
+hair_lilac = material("092 | subtle lilac hair", (.36, .32, .46), rough=.62)
+hair_shadow = material("092 | deep lavender hair shadow", (.20, .19, .28), rough=.78)
 leather = material("092 | dark walnut leather", (.095, .061, .059), rough=.76)
 leather_lit = material("092 | saddle leather edge", (.21, .13, .11), rough=.68)
 gold = material("092 | antique engraved gold", (.58, .37, .135), metal=.75, rough=.38)
@@ -107,6 +107,10 @@ for vertex in body.data.vertices:
     if 1.20 < z < 1.56 and .27 < ax < .57:
         # Deltoid, upper arm and triceps; anatomy remains contiguous.
         p.x += math.copysign(.008*bell(z,1.455,.085),x)
+    # Tuck oversized ears in without rebuilding their sculpted loops.
+    if 1.68 < z < 1.81 and ax > .095 and -.04 < y < .075:
+        ear = bell(z,1.742,.049)*smoothstep(.095,.142,ax)
+        p.x -= math.copysign(.019*ear,x)
     vertex.co = world_inv @ p
 body.data.update()
 for poly in body.data.polygons:
@@ -180,7 +184,8 @@ for sign,label in ((-1,"L"),(1,"R")):
 # Scalp made from the very same upper-head source topology. Vary hairline
 # threshold front-to-back rather than making a featureless spherical helmet.
 def scalp_region(c,pts):
-    threshold = 1.826 if c.y < -.034 else 1.788
+    threshold = (1.823 + .013*math.sin(27*c.x+1.0) if c.y < -.034
+                 else 1.793 + .013*math.sin(24*c.x+3.2))
     return c.z > threshold and all(p.z > threshold-.008 for p in pts)
 scalp=extracted_shell("092 | anatomical scalp hair foundation",scalp_region,
                       hair_base,.009,subdivision=1)
@@ -209,40 +214,40 @@ def ribbon(points, width, mat_idx):
         hair_m.append(mat_idx)
 
 # Crown: different sweeps/lengths, warm/cool alternating highlights.
-for k in range(84):
-    a=2*math.pi*(k+.37*rng.random())/84
+for k in range(115):
+    a=2*math.pi*(k+.37*rng.random())/115
     r=.027+.070*rng.random()
     x=r*math.cos(a)
     y=r*math.sin(a)
     root=Vector((x,y,1.911-.27*r))
     direction=Vector((.32*math.sin(a+1.8),-.58+.23*math.sin(a),-.22))
-    length=.034+.043*rng.random()
+    length=.052+.048*rng.random()
     mid=root+direction*length*.52+Vector((0,0,.010))
     tip=root+direction*length
     ribbon([root,root.lerp(mid,.5),mid,mid.lerp(tip,.55),tip],
-           .009+.010*rng.random(), k%5==0 and 2 or (k%3==0 and 1 or 0))
+           .005+.005*rng.random(), k%5==0 and 2 or (k%3==0 and 1 or 0))
 
 # Fringe follows the face rather than forming a solid forward visor.
-for k in range(23):
-    f=(k+.45)/23
+for k in range(33):
+    f=(k+.45)/33
     x=-.101+f*.202
     root=Vector((x*.78,-.061,1.882-.13*abs(x)))
-    tip=Vector((x + .012*math.sin(2.8*k),-.126-.006*rng.random(),
-                1.804+.042*rng.random()+.16*abs(x)))
-    mid=root.lerp(tip,.49)+Vector((0,-.012,.014))
+    tip=Vector((x + .012*math.sin(2.8*k),-.122-.004*rng.random(),
+                1.827+.025*rng.random()+.085*abs(x)))
+    mid=root.lerp(tip,.49)+Vector((0,-.007,.012))
     ribbon([root,root.lerp(mid,.5),mid,mid.lerp(tip,.5),tip],
-           .010+.010*rng.random(), k%4==0 and 1 or 0)
+           .005+.005*rng.random(), k%4==0 and 1 or 0)
 
 # Temple / nape locks keep a visible short, layered cut from side and rear.
 for sign in (-1,1):
-    for k in range(17):
-        q=k/16
+    for k in range(24):
+        q=k/23
         root=Vector((sign*(.093+.010*rng.random()),-.026+q*.091,
                      1.848-.015*q))
         tip=Vector((sign*(.099+.018*rng.random()),-.075+q*.111,
-                    1.776+.057*rng.random()))
+                    1.794+.040*rng.random()))
         mid=root.lerp(tip,.58)+Vector((sign*.011,0,.014))
-        ribbon([root,mid,tip],.009+.008*rng.random(), (k+1)%4==0 and 2 or 1)
+        ribbon([root,mid,tip],.005+.005*rng.random(), (k+1)%4==0 and 2 or 1)
 
 hair_mesh=bpy.data.meshes.new("Asymmetric short layered ribbons • 0.9.2")
 hair_mesh.from_pydata(hair_v,[],hair_f)
@@ -379,8 +384,8 @@ def eye_disc(name,x,z,r,mat,depth):
 for sign,label in ((-1,"L"),(1,"R")):
     # Anchor to measured head position, keep asymmetric but anatomically paired.
     x=sign*.053
-    eye_disc("092 | "+label+" muted iris",x,1.756,.0108,iris_mat,.0022)
-    eye_disc("092 | "+label+" deep pupil",x,1.756,.0048,pupil_mat,.0040)
+    eye_disc("092 | "+label+" muted iris",x,1.725,.0125,iris_mat,.0022)
+    eye_disc("092 | "+label+" deep pupil",x,1.725,.0052,pupil_mat,.0040)
 
 # Clean source is saved hidden for future sculpt passes; not exported.
 for ob in base["selected_objects"]:
@@ -396,7 +401,7 @@ metadata={
   "body_vertices_after_sculpt":len(body.data.vertices),
   "body_faces_after_sculpt":len(body.data.polygons),
   "anatomy_method":"proportional deformation of original Blender Studio vertices/quads",
-  "hair_cards":len(hair_f),"hair_strand_count":84+23+2*17,
+  "hair_cards":len(hair_f),"hair_strand_count":115+33+2*24,
   "trouser_quads":len(trousers.data.polygons),
   "bracer_quads":sum(len(b.data.polygons) for b in bracers),
   "scalp_quads":len(scalp.data.polygons),
