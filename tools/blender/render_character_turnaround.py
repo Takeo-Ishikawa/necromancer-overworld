@@ -21,6 +21,10 @@ scene.render.image_settings.color_mode = "RGBA"
 scene.render.engine = "CYCLES"
 scene.cycles.device = "CPU"
 scene.cycles.samples = 8
+scene.cycles.use_denoising = False
+for view_layer in scene.view_layers:
+    if hasattr(view_layer, "cycles"):
+        view_layer.cycles.use_denoising = False
 scene.world.color = (0.14, 0.14, 0.14)
 
 for ob in bpy.data.objects:
