@@ -25,10 +25,17 @@ jobs:
         run: |
           blender --background --factory-startup --python tools/blender/generate_necromancer_base.py
 
+      - name: Render front side and back inspection images
+        run: |
+          blender --background tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
+
       - name: Validate generated files
         run: |
           test -s tools/blender/character_base.blend
           test -s tools/blender/character_base.fbx
+          test -s tools/blender/character_front.png
+          test -s tools/blender/character_side.png
+          test -s tools/blender/character_back.png
           ls -lh tools/blender/character_base.blend tools/blender/character_base.fbx
 
       - name: Upload Blender and Unity-ready FBX
@@ -38,5 +45,8 @@ jobs:
           path: |
             tools/blender/character_base.blend
             tools/blender/character_base.fbx
+            tools/blender/character_front.png
+            tools/blender/character_side.png
+            tools/blender/character_back.png
           if-no-files-found: error
           retention-days: 14
