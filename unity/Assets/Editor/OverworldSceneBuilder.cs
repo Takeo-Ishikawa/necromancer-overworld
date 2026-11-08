@@ -93,6 +93,7 @@ public static class OverworldSceneBuilder
         glow.shadows = LightShadows.None;
 
         OverworldVisualPass.Apply();
+        OverworldCaveEntrance.Apply();
         CreateJoystick(movement);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
