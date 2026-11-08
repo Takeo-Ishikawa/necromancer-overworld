@@ -64,3 +64,20 @@ for name, location in views.items():
     scene.render.filepath = os.path.join(root, "character_" + name + ".png")
     bpy.ops.render.render(write_still=True)
     print("Saved " + scene.render.filepath)
+
+# High-resolution face-and-hair inspection, added for visual approval in 0.8.5.
+# This is the same actual Blender mesh, not an invented concept illustration.
+scene.render.resolution_x = 720
+scene.render.resolution_y = 720
+scene.cycles.samples = 24
+camera_data.ortho_scale = 0.72
+for name, location in {
+    "head_front": (0, -3.0, 1.88),
+    "head_threequarter": (2.1, -3.0, 1.88),
+}.items():
+    camera.location = location
+    direction = Vector((0, 0, 1.80)) - camera.location
+    camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    scene.render.filepath = os.path.join(root, "character_" + name + ".png")
+    bpy.ops.render.render(write_still=True)
+    print("Saved " + scene.render.filepath)
