@@ -92,6 +92,7 @@ public static class OverworldSceneBuilder
         glow.intensity = 1.5f;
         glow.shadows = LightShadows.None;
 
+        OverworldVisualPass.Apply();
         CreateJoystick(movement);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
