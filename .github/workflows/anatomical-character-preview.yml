@@ -1,0 +1,82 @@
+name: Necromancer 0.9.1 Official CC0 Anatomy
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/anatomical/**'
+      - '.github/workflows/anatomical-character-preview.yml'
+
+jobs:
+  sculpt-cc0:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils libgl1 libxi6 libxrender1 libxkbcommon-x11-0 libsm6
+
+      - name: Download Blender Studio CC0 Human Base Meshes v1.4.1
+        run: |
+          mkdir -p tools/blender/anatomical/_source_bundle
+          curl -fL --retry 3 --retry-delay 4 --connect-timeout 30 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/human-base-meshes-v1.4.1.zip
+          unzip -t /tmp/human-base-meshes-v1.4.1.zip | tail -n 2
+          unzip -q /tmp/human-base-meshes-v1.4.1.zip -d tools/blender/anatomical/_source_bundle
+          find tools/blender/anatomical/_source_bundle -type f -name '*.blend' | sort | head -40
+
+      - name: Cache official Blender 4.5.15 LTS binary
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/blender-4.5.15
+          key: official-blender-linux-x64-v4.5.15
+
+      - name: Install Blender 4.5.15 LTS for modern asset library
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 --connect-timeout 30 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.15-linux-x64.tar.xz
+          mkdir -p /opt/blender-4.5.15
+          tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
+
+      - name: Import official male mesh, sculpt and render
+        run: |
+          /opt/blender-4.5.15/blender --version
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/anatomical/import_sculpt_091.py
+
+      - name: Validate source and generated assets
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path("tools/blender/anatomical/output")
+          meta=json.loads((p/"source_metadata.json").read_text())
+          assert meta["license"]=="CC0-1.0"
+          assert meta["vertices"]>1000
+          for filename in (
+            "necromancer_anatomy_091.blend","necromancer_anatomy_091.fbx",
+            "anatomy_front.png","anatomy_side.png","anatomy_back.png",
+            "anatomy_threequarter.png","asset_catalog.json"
+          ):
+            f=p/filename
+            assert f.exists() and f.stat().st_size>0,filename
+          print("VALIDATED:",meta["asset_file"],meta["asset_datablock"],
+                "vertices:",meta["vertices"],"faces:",meta["faces"])
+          PY
+
+      - name: Upload anatomical Blender/FBX with provenance and four views
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-anatomical-0-9-1-cc0-preview
+          path: |
+            tools/blender/anatomical/output/*.blend
+            tools/blender/anatomical/output/*.fbx
+            tools/blender/anatomical/output/*.png
+            tools/blender/anatomical/output/*.json
+          retention-days: 14
+          if-no-files-found: error
