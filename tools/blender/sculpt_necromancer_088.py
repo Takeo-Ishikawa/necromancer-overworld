@@ -187,6 +187,13 @@ for vertex in garment.data.vertices:
         influence=gauss(z,.976,.080)
         vertex.co.x=x*(1-.045*influence)
         vertex.co.y=y*(1-.014*influence)
+    # Raise the recessed front-crotch valley left by the old split-leg
+    # panels. The negative-Y surface is gently filled in as continuous cloth,
+    # avoiding the deep inverted triangle cast by the first voxel join.
+    if .715<z<.985 and ax<.215 and y<-.040:
+        front=max(0,min(1,(-y-.040)/.125))
+        center_fill=.041*gauss(x,0,.147)*gauss(z,.837,.127)
+        vertex.co.y-=front*center_fill
     if .36<z<.96 and ax>.018:
         leg_center=sign*.151
         theta=math.atan2(y-.002,x-leg_center)
