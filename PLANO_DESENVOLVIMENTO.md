@@ -1,0 +1,80 @@
+# NECROMANCER OVERWORLD — ESTADO DO PROJETO E PRÓXIMOS PASSOS
+
+Atualizado em 2026-11-07. Documento central de continuidade para próximas sessões.
+
+## Objetivo e separação de projetos
+
+Criar um protótipo Unity 3D com câmera ortográfica inclinada (2.5D), preservando integralmente o jogo 2D original em outro repositório. Este repositório é `Takeo-Ishikawa/necromancer-overworld`. O foco é testar exploração, combate automático, reanimação e servos antes de investir em modelos 3D definitivos.
+
+## Implementações até a versão 0.6
+
+- **0.1:** estrutura Unity 2022.3.62f2, geração de cena por editor, câmara segura, controle de personagem por teclado/joystick, câmera ortográfica inclinada e compilação Android.
+- **0.2:** polimento geométrico modular: lajes, colunas, braseiros, detalhes da câmara e silhueta provisória do protagonista.
+- **0.3:** corredor de caverna conectado à saída sul da câmara.
+- **0.4:** primeira sala de caverna, três Grave Pups provisórios e patrulhamento.
+- **0.5:** vida, ataques automáticos sem gasto de anima, perseguição inimiga, morte e respawn. O jogador reaparece no santuário e os inimigos reaparecem após 10 segundos.
+- **0.6 (atual):** inimigos derrotados deixam restos reanimáveis por 20 segundos; o necromante inicia com 100 de anima, gasta 25 por reanimação, tem alcance de interação de 3,5 unidades e limite inicial de cinco servos. Reanimar com **E/R** no Windows ou com o botão **REANIMAR** na interface (também disponível no Android). Servos são aliados persistentes até morrerem, acompanham o jogador e atacam automaticamente inimigos próximos. HUD provisório exibe vida, anima e número de servos.
+
+## Mecânicas atuais e restrições
+
+- O ataque automático não consome anima. A anima é usada somente para reanimar.
+- Grave Pups hostis e servos usam a mesma infraestrutura de vida e combate, com facções diferenciadas.
+- Servos não são salvos entre sessões; persistem somente durante a partida.
+- A anima **não regenera** nesta versão: é um recurso de teste com valor inicial de 100. A economia definitiva e as fontes de anima ainda precisam ser projetadas.
+- Os cadáveres são representações temporárias simplificadas, não modelos artísticos finais.
+- Os servos utilizam cápsulas coloridas provisórias, não o modelo completo do Grave Pup.
+- A IA ainda é simples, sem navegação por NavMesh nem sistema robusto de colisão/evitação.
+- O HUD usa `OnGUI` para funcionar rapidamente em Windows e Android; deverá ser substituído por Canvas responsivo.
+- O comportamento e balanceamento ainda não foram validados em dispositivo. Não considerar a versão 0.6 aprovada antes dos testes.
+
+## Como compilar
+
+Workflows GitHub Actions:
+- `.github/workflows/android-preview.yml`: gera APK Android.
+- `.github/workflows/windows-preview.yml`: gera artefato ZIP com EXE e pasta Data para Windows x64.
+
+Ambos geram a cena usando `OverworldSceneBuilder.Build()`. Os secrets de licença Unity são compartilhados. O código foi enviado ao GitHub; verificar as execuções antes de declarar compilação bem-sucedida.
+
+## Testes de aceitação 0.6
+
+1. Abrir o jogo em Windows e Android; confirmar que a câmara e o corredor continuam funcionais.
+2. Entrar na sala, aproximar-se de um Grave Pup e verificar o combate automático.
+3. Após derrotá-lo, verificar a presença dos restos por até 20 segundos.
+4. Aproximar-se a menos de 3,5 unidades e pressionar E/R ou REANIMAR.
+5. Confirmar gasto de 25 de anima, aparecimento de um servo e atualização do HUD.
+6. Verificar que o servo acompanha o jogador e ataca outros Grave Pups.
+7. Confirmar que os inimigos reaparecem e que o número de servos respeita o limite.
+8. Confirmar que não há consumo de anima por ataques automáticos.
+9. Verificar posicionamento e tamanho do botão no Android, especialmente em telas menores.
+10. Observar eventuais travamentos, ataques à distância indevidos, servos atravessando paredes e queda de desempenho.
+
+## Próximos passos priorizados
+
+**0.7 — estabilidade e feedback de combate**
+- Corrigir problemas reportados no teste 0.6.
+- Adicionar barras de vida sobre os personagens e indicadores de dano/impacto.
+- Melhorar seleção de alvo e comportamento dos servos para que não atravessem paredes.
+- Melhorar interface touch e adaptar posicionamento por resolução.
+
+**0.8 — sistema de necromancia aprofundado**
+- Transformar cadáveres e servos em versões visuais consistentes dos Grave Pups.
+- Definir fontes e regeneração de anima, custo por espécie, limite de servos e balanceamento.
+- Introduzir dispensa de servos e gerenciamento do exército.
+
+**0.9 — direção artística e animação**
+- Substituir cápsula do necromante por modelo estilizado e criar animações básicas de locomoção/ataque.
+- Consolidar materiais, iluminação e silhuetas das criaturas.
+- Revisar câmera, oclusão, colisões e desempenho mobile.
+
+**1.0 — ciclo jogável mínimo**
+- Integrar uma segunda espécie de inimigo, inicialmente Rotboar.
+- Validar loop: explorar → derrotar → reanimar → ampliar exército → enfrentar inimigos mais fortes.
+- Preparar testes de jogabilidade e estabilidade em Windows e Android.
+
+## Princípios de continuidade
+
+1. Manter o repositório 2D original intacto.
+2. Preservar cenário e personagens como elementos modulares editáveis.
+3. Priorizar o ciclo jogável antes de investir em arte final.
+4. Documentar entregas e pendências neste arquivo após cada marco.
+5. Distinguir sempre **código enviado**, **compilação concluída** e **teste em dispositivo aprovado**.
