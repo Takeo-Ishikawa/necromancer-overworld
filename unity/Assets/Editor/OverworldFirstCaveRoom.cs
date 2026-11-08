@@ -45,6 +45,16 @@ public static class OverworldFirstCaveRoom
         var patrol = root.gameObject.AddComponent<GravePupPatrol>();
         patrol.patrolRadius = 2f;
         patrol.speed = 0.95f;
+        var health = root.gameObject.AddComponent<OverworldHealth>();
+        health.maxHealth = 45f;
+        var combat = root.gameObject.AddComponent<OverworldAutoCombat>();
+        combat.isPlayer = false;
+        combat.damage = 6f;
+        combat.range = 1.45f;
+        combat.aggroRange = 5f;
+        combat.attacksPerSecond = 0.75f;
+        var lifecycle = root.gameObject.AddComponent<OverworldCombatLifecycle>();
+        lifecycle.respawnSeconds = 10f;
         Shape(PrimitiveType.Capsule, "Body", new Vector3(0f, 0.42f, 0f), new Vector3(0.65f, 0.52f, 0.9f), fur, root);
         Shape(PrimitiveType.Sphere, "Head", new Vector3(0f, 0.67f, 0.45f), new Vector3(0.62f, 0.54f, 0.52f), bone, root);
         Shape(PrimitiveType.Cube, "Left ear", new Vector3(-0.22f, 1.05f, 0.42f), new Vector3(0.18f, 0.33f, 0.15f), fur, root);
