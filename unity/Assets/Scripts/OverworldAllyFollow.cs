@@ -22,7 +22,16 @@ namespace NecromancerOverworld
             desired.y = transform.position.y;
             Vector3 delta = desired - transform.position;
             if (delta.sqrMagnitude < 0.4f) return;
-            transform.position = Vector3.MoveTowards(transform.position, desired, speed * Time.deltaTime);
+            Vector3 step = Vector3.MoveTowards(transform.position, desired, speed * Time.deltaTime) - transform.position;
+            // Stop at solid world geometry. Decorative and character renderers have no colliders.
+            RaycastHit hit;
+            Vector3 origin = transform.position + Vector3.up * 0.65f;
+            if (Physics.SphereCast(origin, 0.28f, step.normalized, out hit, step.magnitude + 0.05f,
+                ~0, QueryTriggerInteraction.Ignore) && hit.collider.transform != transform &&
+                !hit.collider.transform.IsChildOf(transform) &&
+                (owner == null || !hit.collider.transform.IsChildOf(owner)))
+                return;
+            transform.position += step;
             if (delta.sqrMagnitude > 0.01f)
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(delta), Mathf.Clamp01(7f * Time.deltaTime));
         }
