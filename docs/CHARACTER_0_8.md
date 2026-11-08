@@ -49,3 +49,6 @@ Foi criado `tools/blender/generate_necromancer_083.py`, uma **nova construção*
 O workflow `Necromancer Character 3D Preview` foi direcionado ao novo gerador e publica o pacote `necromancer-character-0-8-3-remodel` após exportação FBX e renderização das vistas. O gerador anterior permanece para histórico técnico.
 
 **Limitações importantes**: trata-se de uma remodelagem procedural ainda sujeita a aprovação visual. Não corresponde a escultura high-poly, retopologia final, UVs acabadas, rigging ou animações. Não substituir o protagonista jogável no Unity antes de examinar as vistas renderizadas e aprovar a silhueta/rosto/roupas.
+
+## Verificação da remodelagem 0.8.3
+O workflow **42443059298** (commit `18a83b4`) terminou com sucesso: novo `.blend`, `.fbx` e vistas frontal, lateral e posterior no artifact `necromancer-character-0-8-3-remodel`. A geometria de ombros/braços/tronco foi reunida para prévia com remesh, enquanto as superfícies anatômicas originais ficaram preservadas numa coleção oculta para edição. As imagens foram inspecionadas. **O resultado ainda não é suficientemente fiel ao conceito para aprovação artística**: falta escultura detalhada do peitoral e abdômen, refinamento adulto do rosto, penteado mais convincente, calças menos rígidas e mãos/pés mais naturais. Não alterar personagem jogável nem iniciar rigging até solucionar esses pontos.
