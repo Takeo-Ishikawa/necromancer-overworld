@@ -18,16 +18,17 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender
+          sudo apt-get install -y blender python3-numpy libosmesa6
           blender --version
+          /usr/bin/python3 -c 'import numpy; print(numpy.__version__)'
 
       - name: Generate editable character and FBX
         run: |
-          blender --background --factory-startup --python tools/blender/generate_necromancer_base.py
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup --python tools/blender/generate_necromancer_base.py
 
       - name: Render front side and back inspection images
         run: |
-          blender --background tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
 
       - name: Validate generated files
         run: |
