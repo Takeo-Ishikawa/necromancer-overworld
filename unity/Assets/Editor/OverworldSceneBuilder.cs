@@ -94,6 +94,7 @@ public static class OverworldSceneBuilder
 
         OverworldVisualPass.Apply();
         OverworldCaveEntrance.Apply();
+        OverworldFirstCaveRoom.Apply();
         CreateJoystick(movement);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
