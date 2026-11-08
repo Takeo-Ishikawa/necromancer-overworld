@@ -88,6 +88,7 @@ public static class OverworldSceneBuilder
         follow.target = character.transform;
         var healthBars = cameraObject.AddComponent<OverworldHealthBars>();
         healthBars.worldCamera = camera;
+        cameraObject.AddComponent<OverworldDamageNumbers>();
         cameraObject.transform.position = character.transform.position + follow.offset;
         cameraObject.transform.LookAt(character.transform.position + Vector3.up);
 
