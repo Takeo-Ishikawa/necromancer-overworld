@@ -20,7 +20,18 @@ namespace NecromancerOverworld
         public void TakeDamage(float damage)
         {
             if (!IsAlive || damage <= 0f) return;
+            float applied = Mathf.Min(Current, damage);
             Current = Mathf.Max(0f, Current - damage);
+            var camera = Camera.main;
+            if (camera != null)
+            {
+                var numbers = camera.GetComponent<OverworldDamageNumbers>();
+                if (numbers != null)
+                {
+                    var combat = GetComponent<OverworldAutoCombat>();
+                    numbers.Show(transform.position, applied, combat != null && !combat.isPlayer);
+                }
+            }
             if (!IsAlive && OnDeath != null) OnDeath(this);
         }
 
