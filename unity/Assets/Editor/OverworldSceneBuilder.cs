@@ -61,6 +61,16 @@ public static class OverworldSceneBuilder
         cc.radius = 0.36f;
         cc.center = new Vector3(0f, 0.95f, 0f);
         var movement = character.AddComponent<OverworldPlayerController>();
+        var playerHealth = character.AddComponent<OverworldHealth>();
+        playerHealth.maxHealth = 100f;
+        var playerCombat = character.AddComponent<OverworldAutoCombat>();
+        playerCombat.isPlayer = true;
+        playerCombat.range = 2.3f;
+        playerCombat.damage = 20f;
+        playerCombat.attacksPerSecond = 1.3f;
+        playerCombat.aggroRange = 2.3f;
+        var playerLifecycle = character.AddComponent<OverworldCombatLifecycle>();
+        playerLifecycle.isPlayer = true;
 
         GameObject cameraObject = new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
