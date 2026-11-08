@@ -38,6 +38,10 @@ jobs:
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/sculpt_necromancer_086.py
 
+      - name: Apply 0.8.7 hands, feet and anatomy refinements
+        run: |
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/sculpt_necromancer_087.py
+
       - name: Render front side and back inspection images
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
@@ -51,12 +55,14 @@ jobs:
           test -s tools/blender/character_back.png
           test -s tools/blender/character_head_front.png
           test -s tools/blender/character_head_threequarter.png
+          test -s tools/blender/character_hand_detail.png
+          test -s tools/blender/character_foot_detail.png
           ls -lh tools/blender/character_base.blend tools/blender/character_base.fbx
 
       - name: Upload Blender and Unity-ready FBX
         uses: actions/upload-artifact@v4
         with:
-          name: necromancer-character-0-8-6-silhouette-cloth
+          name: necromancer-character-0-8-7-hands-feet
           path: |
             tools/blender/character_base.blend
             tools/blender/character_base.fbx
@@ -65,5 +71,7 @@ jobs:
             tools/blender/character_back.png
             tools/blender/character_head_front.png
             tools/blender/character_head_threequarter.png
+            tools/blender/character_hand_detail.png
+            tools/blender/character_foot_detail.png
           if-no-files-found: error
           retention-days: 14
