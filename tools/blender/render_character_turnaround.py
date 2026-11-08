@@ -81,3 +81,17 @@ for name, location in {
     scene.render.filepath = os.path.join(root, "character_" + name + ".png")
     bpy.ops.render.render(write_still=True)
     print("Saved " + scene.render.filepath)
+
+# 0.8.7 anatomy close-ups. Render actual geometry for hands/feet review.
+# Head close-up camera is reset per shot so existing front/side/back are unchanged.
+camera_data.ortho_scale=0.46
+for name, location, target in [
+    ("hand_detail", (1.6,-2.2,1.17), (0.462,-0.020,0.94)),
+    ("foot_detail", (1.25,-2.0,0.36), (0.153,-0.10,0.065)),
+]:
+    camera.location=location
+    direction=Vector(target)-camera.location
+    camera.rotation_euler=direction.to_track_quat("-Z","Y").to_euler()
+    scene.render.filepath=os.path.join(root,"character_"+name+".png")
+    bpy.ops.render.render(write_still=True)
+    print("Saved "+scene.render.filepath)
