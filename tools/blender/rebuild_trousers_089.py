@@ -48,19 +48,19 @@ def smin(a,b,k):
     return np.minimum(a,b)-h*h*k*.25
 
 # Continuous waist/seat profile, tapered from full hips to fitted waist.
-pelvis_rx=(.208+.045*np.exp(-((Z-.918)/.140)**2)
+pelvis_rx=(.200+.038*np.exp(-((Z-.918)/.140)**2)
            -.008*np.exp(-((Z-1.055)/.035)**2))
-pelvis_ry=(.126+.040*np.exp(-((Z-.907)/.145)**2))
+pelvis_ry=(.122+.035*np.exp(-((Z-.907)/.145)**2))
 pelvis_radius=(np.sqrt((X/pelvis_rx)**2+(Y/pelvis_ry)**2)-1.0)*.143
-# Pelvis extends below the crotch to remove the sharp V/triangular gap.
-pelvis=np.maximum(np.maximum(pelvis_radius,.691-Z),Z-1.071)
+# Pelvis blends into upper thighs while retaining a natural crotch rise.
+pelvis=np.maximum(np.maximum(pelvis_radius,.748-Z),Z-1.071)
 
 # Two leg volumes overlap the pelvis, but not one another near the ankles.
 # Front pleats influence the surface directly rather than floating overlays.
 def leg_field(sign):
     center=sign*(.160-.015*np.clip((Z-.38)/.63,0,1))
-    rx=.139+.019*np.clip((Z-.35)/.65,0,1)
-    ry=.133+.014*np.clip((Z-.35)/.65,0,1)
+    rx=.132+.017*np.clip((Z-.35)/.65,0,1)
+    ry=.130+.012*np.clip((Z-.35)/.65,0,1)
     fold=(.004*np.sin(Z*26+sign*.7)+.003*np.sin(Z*48-sign*.8))
     rx=rx+fold
     ry=ry+fold*.55
@@ -72,8 +72,8 @@ field=smin(pelvis,legs,.078)
 
 # Fill the front central gusset gently: smooth rounded fabric fold, not a
 # protruding triangular polygon. Closes the deep front valley in 0.8.8.
-gusset=(np.sqrt((X/.158)**2+((Y+.020)/.140)**2+
-                ((Z-.760)/.116)**2)-1)*.105
+gusset=(np.sqrt((X/.127)**2+((Y+.023)/.118)**2+
+                ((Z-.803)/.085)**2)-1)*.105
 field=smin(field,gusset,.028).astype(np.float32)
 
 # Surface nets: one vertex per cell straddling the zero isosurface, derived
