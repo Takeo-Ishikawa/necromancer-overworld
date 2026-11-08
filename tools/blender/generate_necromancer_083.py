@@ -442,12 +442,19 @@ bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(ROOT,"character_base.blend"))
 bpy.ops.object.select_all(action='DESELECT')
 for ob in bpy.context.scene.objects:
-    if ob.type in {'MESH','CURVE'} and not ob.hide_render:
+    if ob.type == 'CURVE' and not ob.hide_render:
+        ob.select_set(True)
+if bpy.context.selected_objects:
+    bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
+    bpy.ops.object.convert(target='MESH')
+bpy.ops.object.select_all(action='DESELECT')
+for ob in bpy.context.scene.objects:
+    if ob.type == 'MESH' and not ob.hide_render:
         ob.select_set(True)
 bpy.ops.export_scene.fbx(
     filepath=os.path.join(ROOT,"character_base.fbx"),
     use_selection=True,
-    object_types={'MESH','CURVE'},
+    object_types={'MESH'},
     apply_unit_scale=True,
     axis_forward='-Z', axis_up='Y'
 )
