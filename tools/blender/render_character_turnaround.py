@@ -39,7 +39,7 @@ light_data = bpy.data.lights.new("Inspection soft light", type="AREA")
 light_object = bpy.data.objects.new("Inspection soft light", light_data)
 scene.collection.objects.link(light_object)
 light_object.location = (1.5, -2.5, 4.0)
-light_data.energy = 650
+light_data.energy = 430
 light_data.shape = "DISK"
 light_data.size = 5.0
 scene.camera = None
