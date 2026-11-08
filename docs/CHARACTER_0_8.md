@@ -6,7 +6,7 @@ Turnaround enviado pelo usuário em 2026-11-07: homem adulto, corpo musculoso co
 ## Estado de entrega
 Primeira etapa **em andamento**: `tools/blender/generate_necromancer_base.py` cria um *blockout* 3D editável em Blender 4.x e exporta FBX. Corpo, cabelo, roupa e acessórios são objetos separados. **Não é um modelo final fiel ao turnaround**: os volumes são simplificados e ainda faltam escultura anatômica, rosto detalhado, cabelo refinado, topologia adequada à deformação, UV, texturas e esqueleto.
 
-O script ainda **não foi executado/validado no Blender neste ambiente**. Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
+A automação GitHub Actions `Necromancer Character 3D Preview` executa Blender em ambiente isolado, exporta o `.blend` e `.fbx`, renderiza vistas frontal, lateral e posterior e disponibiliza os arquivos como artifact. **A existência do workflow não comprova sua execução bem-sucedida**: verificar o resultado em Actions. Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
 
 ## Como gerar a base
 Instalar Blender 4.x e executar a partir da raiz do repositório:
@@ -15,7 +15,7 @@ Instalar Blender 4.x e executar a partir da raiz do repositório:
 blender -b --python tools/blender/generate_necromancer_base.py
 ```
 
-Arquivos locais resultantes: `tools/blender/character_base.blend` e `tools/blender/character_base.fbx`. Abrir o .blend, corrigir a anatomia e verificar exportação FBX. Não substituir o personagem no jogo antes de aprovar o resultado.
+Arquivos locais resultantes: `tools/blender/character_base.blend` e `tools/blender/character_base.fbx`. Para gerar imagens de inspeção, executar `blender -b tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py`. A automação `.github/workflows/character-model-preview.yml` faz as duas etapas e publica o artifact `necromancer-character-0-8-blockout` com os arquivos 3D e as três imagens. Abrir o .blend, corrigir a anatomia e verificar exportação FBX. Não substituir o personagem no jogo antes de aprovar o resultado.
 
 ## Pipeline para fidelidade
 1. Aprovar silhueta e proporções do corpo nas vistas frontal, lateral e posterior.
