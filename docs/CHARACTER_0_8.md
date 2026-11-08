@@ -6,7 +6,7 @@ Turnaround enviado pelo usuário em 2026-11-07: homem adulto, corpo musculoso co
 ## Estado de entrega
 Primeira etapa **em andamento**: `tools/blender/generate_necromancer_base.py` cria um *blockout* 3D editável em Blender 4.x e exporta FBX. Corpo, cabelo, roupa e acessórios são objetos separados. **Não é um modelo final fiel ao turnaround**: os volumes são simplificados e ainda faltam escultura anatômica, rosto detalhado, cabelo refinado, topologia adequada à deformação, UV, texturas e esqueleto.
 
-A automação GitHub Actions `Necromancer Character 3D Preview` executa Blender em ambiente isolado, exporta o `.blend` e `.fbx`, renderiza vistas frontal, lateral e posterior e disponibiliza os arquivos como artifact. As execuções iniciais falharam: o Blender 4.0.2 do runner não encontrava `numpy` para exportar FBX, e o renderizador Workbench abortou no Linux headless. Foi adicionado `python3-numpy`/PYTHONPATH e o renderizador foi trocado por Cycles CPU. **Essas correções ainda precisam ser validadas em nova execução.** Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
+A automação GitHub Actions `Necromancer Character 3D Preview` executa Blender em ambiente isolado, exporta o `.blend` e `.fbx`, renderiza vistas frontal, lateral e posterior e disponibiliza os arquivos como artifact. As execuções iniciais falharam: o Blender 4.0.2 do runner não encontrava `numpy` para exportar FBX, e o renderizador Workbench abortou no Linux headless. Foi adicionado `python3-numpy`/PYTHONPATH e o renderizador foi trocado por Cycles CPU. O problema posterior de ausência de OpenImageDenoiser foi corrigido desativando denoising; o workflow `42441775368` concluiu todas as etapas com sucesso, inclusive o upload do artifact. Nenhum FBX final foi adicionado ao Unity, e a cena jogável existente permanece inalterada.
 
 ## Como gerar a base
 Instalar Blender 4.x e executar a partir da raiz do repositório:
@@ -34,3 +34,6 @@ A primeira fase não concede necromancia automaticamente. O desbloqueio da habil
 - Malha e esqueleto preparados para animações físicas.
 - Materiais adequados para Android e Windows.
 - Builds e testes concluídos antes de declarar a 0.8 pronta.
+
+## Iteração visual 0.8.1
+O gerador foi refinado com queixo, lábios, sobrancelhas, maçãs do rosto, clavículas, oblíquos, dedos separados, abas das bolsas, dobras das calças, faixa pendente do cinto e mais mechas de cabelo. Essas peças continuam modulares e simplificadas. O commit desta iteração dispara uma nova execução do workflow para validar exportação e vistas. **Não interpretar essas melhorias como escultura final ou rigging.**
