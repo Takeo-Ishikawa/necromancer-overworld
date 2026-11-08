@@ -95,3 +95,18 @@ for name, location, target in [
     scene.render.filepath=os.path.join(root,"character_"+name+".png")
     bpy.ops.render.render(write_still=True)
     print("Saved "+scene.render.filepath)
+
+# 0.8.8 garment and shoulder close-ups from the actual Blender geometry.
+camera_data.ortho_scale=1.09
+scene.render.resolution_x=720
+scene.render.resolution_y=720
+for name, location, target in [
+    ("torso_detail", (1.3,-3.25,1.55), (0,-0.02,1.35)),
+    ("trouser_detail", (1.55,-3.25,0.82), (0,-0.015,0.75)),
+]:
+    camera.location=location
+    direction=Vector(target)-camera.location
+    camera.rotation_euler=direction.to_track_quat("-Z","Y").to_euler()
+    scene.render.filepath=os.path.join(root,"character_"+name+".png")
+    bpy.ops.render.render(write_still=True)
+    print("Saved "+scene.render.filepath)
