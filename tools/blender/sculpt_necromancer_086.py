@@ -87,6 +87,15 @@ modifier.iterations=2
 bpy.ops.object.modifier_apply(modifier=modifier.name)
 body.select_set(False)
 
+# Equipment was built around the old arm centerline; follow the actual
+# sculpted arm to prevent the leather band and its brass trim from floating.
+for side,sgn in (("Left",-1),("Right",1)):
+    band=get("Armor | "+side+" etched upper arm band")
+    band.location.x -= sgn*.023
+    trim=bpy.data.objects.get("Armor | "+side+" upper band trim")
+    if trim is not None:
+        trim.location.x -= sgn*.030
+
 # Older clavicle and pectoral curves were too sharp and were read as seams.
 for ob in scene.objects:
     if ob.type=="CURVE" and (
@@ -153,7 +162,7 @@ for v in seat.data.vertices:
     x,y,z=v.co
     # Pull the front upper pant inward so it no longer resembles underwear.
     front=max(0,min(1,(-y-.055)/.10))
-    v.co.y+=.027*front*gaussian(z,.972,.12)
+    v.co.y+=front*(.030*gaussian(z,.972,.12)+.018*gaussian(z,.870,.085))
     if abs(x)>.200 and z>1.010:
         v.co.x-=math.copysign(.007*gaussian(z,1.045,.07),x)
 seat.data.update()
@@ -182,24 +191,24 @@ for side,sign in (("Left",-1),("Right",1)):
     for i in range(65):
         t=i/64
         z=.865-t*.445
-        x=sign*(.239+.012*math.sin(t*math.tau*1.65)+.010*math.sin(t*math.tau*4))
+        x=sign*(.239+.012*math.sin(t*math.tau*1.65)+.004*math.sin(t*math.tau*4))
         samples.append((x,z))
     embroidered_curve("continuous wandering gilt vine",samples,.0021)
     # Vine ornaments are irregular, tapered, with asymmetric leaf clusters.
-    for j,zc in enumerate((.831,.743,.655,.560,.482)):
+    for j,zc in enumerate((.833,.720,.602,.490) if side=="Right" else (.807,.665,.536)):
         x0=sign*(.239+.010*math.sin((.865-zc)/.445*math.tau*1.65))
-        for k in (-1,1):
+        for k in ((-1,) if j%2 else (1,)):
             points=[]
             for i in range(9):
                 t=i/8
                 z=zc+.041*(t-.5)
-                reach=.039*math.sin(math.pi*t)
+                reach=.029*math.sin(math.pi*t)
                 x=x0+sign*k*reach
                 points.append((x,z))
             embroidered_curve("leaf %d.%d"%(j,k),points,.00175)
         embroidered_curve("leaf vein %d"%j,[
-            (x0,zc+.035),(x0+sign*.012,zc+.007),
-            (x0+sign*.006,zc-.033)],.0016)
+            (x0,zc+.031),(x0+sign*.009,zc+.005),
+            (x0+sign*.004,zc-.030)],.00135)
     # Diamond below the vine; angled and long like the concept's sigil.
     x0=sign*.24
     embroidered_curve("lower woven diamond",[
