@@ -1,0 +1,42 @@
+name: Necromancer Character 3D Preview
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/**'
+      - '.github/workflows/character-model-preview.yml'
+
+jobs:
+  character-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+
+      - name: Generate editable character and FBX
+        run: |
+          blender --background --factory-startup --python tools/blender/generate_necromancer_base.py
+
+      - name: Validate generated files
+        run: |
+          test -s tools/blender/character_base.blend
+          test -s tools/blender/character_base.fbx
+          ls -lh tools/blender/character_base.blend tools/blender/character_base.fbx
+
+      - name: Upload Blender and Unity-ready FBX
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-character-0-8-blockout
+          path: |
+            tools/blender/character_base.blend
+            tools/blender/character_base.fbx
+          if-no-files-found: error
+          retention-days: 14
