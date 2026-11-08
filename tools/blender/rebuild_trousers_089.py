@@ -61,7 +61,7 @@ def leg_field(sign):
     center=sign*(.160-.015*np.clip((Z-.38)/.63,0,1))
     rx=.132+.017*np.clip((Z-.35)/.65,0,1)
     ry=.130+.012*np.clip((Z-.35)/.65,0,1)
-    fold=(.004*np.sin(Z*26+sign*.7)+.003*np.sin(Z*48-sign*.8))
+    fold=(.0018*np.sin(Z*26+sign*.7)+.0012*np.sin(Z*48-sign*.8))
     rx=rx+fold
     ry=ry+fold*.55
     radial=(np.sqrt(((X-center)/rx)**2+(Y/ry)**2)-1)*.131
