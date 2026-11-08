@@ -71,6 +71,10 @@ public static class OverworldSceneBuilder
         playerCombat.aggroRange = 2.3f;
         var playerLifecycle = character.AddComponent<OverworldCombatLifecycle>();
         playerLifecycle.isPlayer = true;
+        var necromancy = character.AddComponent<OverworldNecromancy>();
+        var combatHud = character.AddComponent<OverworldCombatHUD>();
+        combatHud.playerHealth = playerHealth;
+        combatHud.necromancy = necromancy;
 
         GameObject cameraObject = new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
