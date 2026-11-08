@@ -101,9 +101,9 @@ for side,sign in (("Left",-1),("Right",1)):
     for vert in cuff.data.vertices:
         x,y,z=vert.co
         center=sign*.153
-        vert.co.x=center+(x-center)*.945
+        vert.co.x=center+(x-center)*.940
         vert.co.y=y*.952
-        vert.co.z=z + .003*math.sin(math.atan2(y,x-center)*3+sign)
+        vert.co.z=.404+(z-.404)*.88 + .002*math.sin(math.atan2(y,x-center)*3+sign)
     cuff.data.update()
 
 # Practical equipment scale: original hip satchel looked like a large
@@ -151,12 +151,8 @@ for side,sign in (("Left",-1),("Right",1)):
                zbase+.033-.066*i/12) for i in range(13)]
         projected("Garment 090 | "+side+" narrow leaf "+str(j),
                   leaf,gold,.0013)
-    # Slightly asymmetric front fabric dart, subtly shaded like a seam.
-    dart_x=sign*.090
-    projected("Garment 090 | "+side+" woven inner dart",[
-        (dart_x,.904),(dart_x+sign*.010,.844),(dart_x+sign*.022,.796),
-        (dart_x+sign*.035,.748)
-    ],seam,.00125)
+    # Creases are sculpted into the cloth surface; no floating dark seam
+    # geometry over the crotch or thigh, which read as drawn-on scratches.
 
 # Darken/remove strong procedural noise contrast: reference is illustrated
 # and fabric should read as textile, not mottled stone.
