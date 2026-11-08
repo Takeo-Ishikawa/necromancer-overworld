@@ -68,7 +68,7 @@ Ambos geram a cena usando `OverworldSceneBuilder.Build()`. Os secrets de licenç
 - Pendente: aprimorar navegação global dos servos e seleção de alvos; migrar barras de vida/números flutuantes de OnGUI para Canvas se necessário.
 
 **0.8 — protagonista 3D fiel à referência (em andamento)**
-- Criado script Blender para base 3D modular do protagonista masculino (blockout editável, ainda não validado em Blender nem integrado ao Unity).
+- Criados script Blender para base 3D modular e renderizador de três vistas, além de workflow independente de geração/exportação para download de .blend, .fbx e imagens. Aguardando validação da execução; ainda não integrado ao Unity.
 - Referência aprovada: torso musculoso descoberto, cabelo curto grisalho-lilás, calças escuras bordadas, braçadeiras e pés descalços; combate inicial com socos e chutes.
 - Pendente: escultura e retopologia de alta fidelidade, UV, texturas, rigging, animações, integração Unity e testes. Detalhes em `docs/CHARACTER_0_8.md`.
 - Economia de anima, dispensa de servos e refinamento da necromancia passam para etapa posterior.
