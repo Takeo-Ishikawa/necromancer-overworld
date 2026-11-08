@@ -3,7 +3,7 @@
 Usage:
   blender -b tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
 
-The renders are diagnostic images of a rough blockout, not polished concept art.
+The renders are diagnostic images of the current generated model, not polished concept art.
 """
 import bpy
 import os
@@ -20,7 +20,7 @@ scene.render.film_transparent = False
 scene.render.image_settings.color_mode = "RGBA"
 scene.render.engine = "CYCLES"
 scene.cycles.device = "CPU"
-scene.cycles.samples = 8
+scene.cycles.samples = 24
 scene.cycles.use_denoising = False
 for view_layer in scene.view_layers:
     if hasattr(view_layer, "cycles"):
