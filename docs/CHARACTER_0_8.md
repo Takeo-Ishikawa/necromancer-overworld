@@ -40,3 +40,12 @@ O gerador foi refinado com queixo, lábios, sobrancelhas, maçãs do rosto, clav
 
 ## Iteração visual 0.8.2 — continuidade corporal
 O workflow da 0.8.1 concluiu com sucesso (run `42442060059`). O gerador agora mantém cópias das peças anatômicas na coleção oculta `Editable body source - hidden` e gera uma superfície corporal de prévia com voxel remesh (resolução 0,016 m). Cabelo, roupa, acessórios e detalhes faciais continuam independentes. A exportação FBX seleciona apenas as peças visíveis, evitando duplicar o corpo. **Ainda não há retopologia deformável nem rig; a malha de prévia não deve ser usada diretamente para animação.** A nova versão precisa passar pelo workflow e por inspeção das três vistas.
+
+## Versão 0.8.3 — reconstrução da malha com prioridade em fidelidade
+A referência visual aprovada mostra um protagonista masculino estilizado de proporções alongadas, rosto adulto, cabelo curto em camadas cinza-lilás, torso atlético exposto, braçadeiras escuras/bronze, calças carvão amplas bordadas em ouro, bolsas de cintura e pés descalços.
+
+Foi criado `tools/blender/generate_necromancer_083.py`, uma **nova construção** (independente dos blockouts 0.8.1 e 0.8.2). O torso, rosto, braços, mãos, panturrilhas, pés e calças agora são malhas geradas por seções anatômicas e superfícies contínuas em vez de peças esféricas. Os volumes do peitoral e abdômen estão integrados à superfície do torso, e as calças recebem dobras procedurais; cabelo, acessórios e bordados são editáveis como elementos separados no `.blend`.
+
+O workflow `Necromancer Character 3D Preview` foi direcionado ao novo gerador e publica o pacote `necromancer-character-0-8-3-remodel` após exportação FBX e renderização das vistas. O gerador anterior permanece para histórico técnico.
+
+**Limitações importantes**: trata-se de uma remodelagem procedural ainda sujeita a aprovação visual. Não corresponde a escultura high-poly, retopologia final, UVs acabadas, rigging ou animações. Não substituir o protagonista jogável no Unity antes de examinar as vistas renderizadas e aprovar a silhueta/rosto/roupas.
