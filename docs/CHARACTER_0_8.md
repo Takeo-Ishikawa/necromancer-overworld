@@ -52,3 +52,10 @@ O workflow `Necromancer Character 3D Preview` foi direcionado ao novo gerador e 
 
 ## Verificação da remodelagem 0.8.3
 O workflow **42443059298** (commit `18a83b4`) terminou com sucesso: novo `.blend`, `.fbx` e vistas frontal, lateral e posterior no artifact `necromancer-character-0-8-3-remodel`. A geometria de ombros/braços/tronco foi reunida para prévia com remesh, enquanto as superfícies anatômicas originais ficaram preservadas numa coleção oculta para edição. As imagens foram inspecionadas. **O resultado ainda não é suficientemente fiel ao conceito para aprovação artística**: falta escultura detalhada do peitoral e abdômen, refinamento adulto do rosto, penteado mais convincente, calças menos rígidas e mãos/pés mais naturais. Não alterar personagem jogável nem iniciar rigging até solucionar esses pontos.
+
+## Iteração 0.8.4 — aproximação ao conceito original
+A referência aprovada é a folha de caminhada com oito vistas: homem adulto de cabelos cinza-lilás, peitoral/abdômen fortes mas anatomia natural, olhos expressivos, braços definidos, calça escura com bordados dourados até abaixo dos joelhos, bolsa presa ao cinto, braçadeiras ornamentadas e pés descalços.
+
+Foi desenvolvido `tools/blender/sculpt_necromancer_084.py`, executado **depois** de `generate_necromancer_083.py`. O novo estágio modifica a malha unificada do corpo para criar relevo do peitoral, seis gomos abdominais, oblíquos, músculos dorsais e ombros mais suaves; afina o queixo; substitui o nariz bulboso por geometria angular; reconstrói o cabelo em mechas curvas com divisão central; alonga as calças, reduz sua largura no quadril e adiciona detalhes às braçadeiras e bolsas. A superfície-base, cabelo, roupas e acessórios permanecem editáveis no projeto Blender.
+
+O workflow publica `necromancer-character-0-8-4-refinement` com `.blend`, `.fbx` e três vistas de inspeção. **Não substituir o protagonista no jogo até validar visualmente a execução e aprovar a fidelidade**. Essa etapa ainda não consiste em escultura manual de alta fidelidade, topologia de deformação ou rigging. O personagem original da cena Unity não foi modificado.
