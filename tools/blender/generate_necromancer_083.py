@@ -224,7 +224,11 @@ for s,side in ((-1,"L"),(1,"R")):
 # Slim uninterrupted arms, naturally tapering down to bare hands.
 for s,side in ((-1,"Left"),(1,"Right")):
     arm_rings=[
-        (1.535,s*0.325,0.012,.077,.096),
+        # Deltoid begins as a narrow sloping root over the trapezius.
+        # Extra upper rings prevent an artificial horizontal shoulder cap.
+        (1.587,s*0.286,0.011,.038,.060),
+        (1.556,s*0.311,0.012,.063,.077),
+        (1.535,s*0.336,0.012,.079,.090),
         (1.505,s*0.355,0.010,.094,.102),
         (1.46,s*0.375,0.009,.100,.095),
         (1.41,s*0.390,0.008,.091,.091),
