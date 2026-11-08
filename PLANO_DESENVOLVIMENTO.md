@@ -15,7 +15,7 @@ Criar um protótipo Unity 3D com câmera ortográfica inclinada (2.5D), preserva
 - **0.5:** vida, ataques automáticos sem gasto de anima, perseguição inimiga, morte e respawn. O jogador reaparece no santuário e os inimigos reaparecem após 10 segundos.
 - **0.6:** inimigos derrotados deixam restos reanimáveis por 20 segundos; o necromante inicia com 100 de anima, gasta 25 por reanimação, tem alcance de interação de 3,5 unidades e limite inicial de cinco servos. Reanimar com **E/R** no Windows ou com o botão **REANIMAR** na interface (também disponível no Android). Servos são aliados persistentes até morrerem, acompanham o jogador e atacam automaticamente inimigos próximos. HUD provisório exibe vida, anima e número de servos.
 
-- **0.7 (atual, segunda entrega):** barras de vida acima dos combatentes, teste de colisão antes de mover servos, números flutuantes de dano com desaparecimento gradual e ajuste inicial do botão de reanimação para telas menores. Ainda faltam navegação avançada e HUD Canvas definitivo.
+- **0.7 (atual, terceira entrega):** barras de vida, números flutuantes de dano, desvio local de obstáculos para servos e HUD Unity Canvas com vida, anima, servos e botão REANIMAR. Falta validar compilações e comportamento em dispositivos.
 
 ## Mecânicas atuais e restrições
 
@@ -25,8 +25,8 @@ Criar um protótipo Unity 3D com câmera ortográfica inclinada (2.5D), preserva
 - A anima **não regenera** nesta versão: é um recurso de teste com valor inicial de 100. A economia definitiva e as fontes de anima ainda precisam ser projetadas.
 - Os cadáveres são representações temporárias simplificadas, não modelos artísticos finais.
 - Os servos utilizam cápsulas coloridas provisórias, não o modelo completo do Grave Pup.
-- A IA ainda é simples, sem navegação por NavMesh. A versão 0.7 adiciona teste de colisão por SphereCast ao movimento dos servos, mas não contorna obstáculos: pode parar diante de paredes e móveis.
-- O HUD usa `OnGUI` para funcionar rapidamente em Windows e Android; deverá ser substituído por Canvas responsivo.
+- A IA ainda é simples, sem NavMesh. A versão 0.7 tenta desviar de obstáculos por sondagem lateral e SphereCast, mas não calcula caminhos globais; pode ficar presa em corredores complexos.
+- O HUD de atributos e o botão de reanimação agora usam Unity Canvas/uGUI com CanvasScaler. Barras de vida e números de dano ainda usam OnGUI sobreposto à cena, provisoriamente.
 - O comportamento e balanceamento ainda não foram validados em dispositivo. Não considerar a versão 0.7 aprovada antes dos testes.
 
 ## Como compilar
@@ -52,14 +52,16 @@ Ambos geram a cena usando `OverworldSceneBuilder.Build()`. Os secrets de licenç
 11. Testar se os servos deixam de atravessar paredes, observando que ainda não conseguem desviar de obstáculos.
 12. Confirmar que cada ataque exibe o dano efetivamente causado e que o número desaparece em menos de um segundo.
 13. Conferir o tamanho do botão REANIMAR em diferentes resoluções e orientações.
-14. Observar eventuais travamentos, ataques à distância indevidos e queda de desempenho.
+14. Verificar que o novo HUD Canvas mostra vida, anima e servos e que REANIMAR funciona por toque e mouse sem interferir no joystick.
+15. Verificar se os servos contornam pequenos obstáculos e se ficam presos em cantos fechados.
+16. Observar eventuais travamentos, ataques à distância indevidos e queda de desempenho.
 
 ## Próximos passos priorizados
 
-**0.7 — estabilidade e feedback de combate (em andamento)**
-- Feito: barras de vida acima dos personagens, bloqueio simples de movimento dos servos contra colisores, números flutuantes de dano e primeiro ajuste responsivo do botão de reanimação.
-- Pendente: validar builds Windows/Android, corrigir problemas reportados e adicionar efeitos de impacto mais elaborados.
-- Pendente: melhorar navegação dos servos ao redor de obstáculos, seleção de alvos e substituir o HUD OnGUI por Canvas responsivo.
+**0.7 — estabilidade e feedback de combate (em validação)**
+- Feito: barras de vida, números de dano, desvio local de obstáculos e HUD de atributos/botão de reanimação com Unity Canvas.
+- Pendente: validar builds Windows/Android e responsividade em diferentes telas, corrigir problemas reportados e adicionar efeitos de impacto.
+- Pendente: aprimorar navegação global dos servos e seleção de alvos; migrar barras de vida/números flutuantes de OnGUI para Canvas se necessário.
 
 **0.8 — sistema de necromancia aprofundado**
 - Transformar cadáveres e servos em versões visuais consistentes dos Grave Pups.
