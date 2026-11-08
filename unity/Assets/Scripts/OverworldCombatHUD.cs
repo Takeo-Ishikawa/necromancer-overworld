@@ -11,7 +11,7 @@ namespace NecromancerOverworld
         private void OnGUI()
         {
             if (playerHealth == null || necromancy == null) return;
-            float scale = Mathf.Max(1f, Mathf.Min(Screen.width / 1000f, Screen.height / 560f));
+            float scale = Mathf.Max(0.75f, Mathf.Min(Screen.width / 1000f, Screen.height / 560f));
             var previous = GUI.matrix;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
             GUI.Box(new Rect(12f, 12f, 265f, 106f), "NECROMANCER");
@@ -20,7 +20,10 @@ namespace NecromancerOverworld
             GUI.Label(new Rect(24f, 82f, 245f, 22f), "Servos: " + necromancy.AllyCount + " / " + necromancy.maxAllies);
             float w = Screen.width / scale;
             float h = Screen.height / scale;
-            if (GUI.Button(new Rect(w - 190f, h - 110f, 176f, 82f), "REANIMAR (E)"))
+            // Keep reanimation on the right, separated from the movement joystick on the left.
+            float buttonWidth = Mathf.Min(176f, w * 0.25f);
+            float buttonHeight = Mathf.Min(82f, h * 0.18f);
+            if (GUI.Button(new Rect(w - buttonWidth - 20f, h - buttonHeight - 30f, buttonWidth, buttonHeight), "REANIMAR (E)"))
                 necromancy.TryReanimate();
             GUI.matrix = previous;
         }
