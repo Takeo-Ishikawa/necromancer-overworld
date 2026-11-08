@@ -50,6 +50,10 @@ jobs:
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/rebuild_trousers_089.py
 
+      - name: Apply 0.9.0 fitted waist and garment drape
+        run: |
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/tailor_necromancer_090.py
+
       - name: Render front side and back inspection images
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
@@ -67,12 +71,13 @@ jobs:
           test -s tools/blender/character_foot_detail.png
           test -s tools/blender/character_torso_detail.png
           test -s tools/blender/character_trouser_detail.png
+          test -s tools/blender/character_090_metrics.json
           ls -lh tools/blender/character_base.blend tools/blender/character_base.fbx
 
       - name: Upload Blender and Unity-ready FBX
         uses: actions/upload-artifact@v4
         with:
-          name: necromancer-character-0-8-9-trouser-topology
+          name: necromancer-character-0-9-0-tailored-cloth
           path: |
             tools/blender/character_base.blend
             tools/blender/character_base.fbx
@@ -85,5 +90,6 @@ jobs:
             tools/blender/character_foot_detail.png
             tools/blender/character_torso_detail.png
             tools/blender/character_trouser_detail.png
+            tools/blender/character_090_metrics.json
           if-no-files-found: error
           retention-days: 14
