@@ -31,15 +31,15 @@ def material(name, rgb, metallic=0, roughness=.74):
 
 skin=material("Skin | muted warm porcelain",(.69,.486,.417))
 shade=material("Skin | warm shading",(.48,.30,.275))
-eyewhite=material("Face 085 | warm sclera",(.78,.695,.61))
+eyewhite=material("Face 085 | warm sclera",(.61,.525,.46))
 iris=material("Face 085 | amber iris",(.43,.245,.125),.01)
 pupil=material("Face 085 | dark pupil",(.082,.062,.062))
-lash=material("Face 085 | dark slate lashes",(.105,.09,.112))
+lash=material("Face 085 | dark slate lashes",(.075,.061,.080))
 mouthcol=material("Face 085 | subtle lips",(.45,.272,.254))
-hairbase=material("Hair 085 | silver lilac base",(.495,.452,.535))
-hairl=material("Hair 085 | reflected silver",(.645,.598,.682))
-hairm=material("Hair 085 | intermediate ash",(.537,.493,.578))
-hairdark=material("Hair 085 | shaded underlayers",(.365,.339,.436))
+hairbase=material("Hair 085 | silver lilac base",(.355,.317,.414))
+hairl=material("Hair 085 | reflected silver",(.470,.423,.534))
+hairm=material("Hair 085 | intermediate ash",(.390,.350,.451))
+hairdark=material("Hair 085 | shaded underlayers",(.260,.228,.331))
 
 def mesh(name, verts, faces, mat, smooth=True):
     data=bpy.data.meshes.new(name+" mesh")
@@ -139,11 +139,11 @@ face.data.update()
 
 # Angular slender nasal bridge, with a small tip and a clean columella.
 nose_verts=[
-    (-.008,-.105,1.845),(.008,-.105,1.845),
-    (-.010,-.119,1.808),(.010,-.119,1.808),
-    (-.012,-.129,1.785),(.012,-.129,1.785),
-    (-.018,-.118,1.777),(.018,-.118,1.777),
-    (0,-.131,1.776),(0,-.099,1.827)
+    (-.008,-.106,1.833),(.008,-.106,1.833),
+    (-.009,-.113,1.807),(.009,-.113,1.807),
+    (-.010,-.123,1.791),(.010,-.123,1.791),
+    (-.016,-.112,1.783),(.016,-.112,1.783),
+    (0,-.125,1.784),(0,-.105,1.816)
 ]
 nose_faces=[
     (0,1,3,2),(2,3,5,4),(4,5,8),(4,8,6),(5,7,8),
@@ -152,12 +152,12 @@ nose_faces=[
 mesh("Face 085 | refined angular nose",nose_verts,nose_faces,skin)
 # Natural, slightly closed lips and restrained cupid's bow.
 stroke("Face 085 | fine mouth line",[
-    (-.031,-.090,1.730),(-.020,-.098,1.727),
-    (-.007,-.101,1.729),(0,-.102,1.727),
-    (.009,-.101,1.728),(.023,-.096,1.727),
-    (.032,-.089,1.731)],mouthcol,.0016)
+    (-.029,-.102,1.735),(-.019,-.110,1.732),
+    (-.007,-.113,1.733),(0,-.114,1.731),
+    (.009,-.113,1.733),(.021,-.110,1.732),
+    (.030,-.102,1.735)],mouthcol,.0021)
 stroke("Face 085 | lower lip hint",[
-    (-.017,-.099,1.719),(0,-.102,1.716),(.018,-.098,1.719)],
+    (-.017,-.106,1.722),(0,-.109,1.720),(.018,-.106,1.722)],
     shade,.0008)
 
 # Almond eye mesh, 6 stations each, with visible iris and angular lashes.
@@ -174,8 +174,8 @@ for side in (-1,1):
         x=side*(inner+(outer-inner)*t)
         center=1.827 + .006*t
         aperture=math.sin(math.pi*t)
-        top=center+.011*aperture
-        bottom=center-.009*aperture
+        top=center+.0075*aperture
+        bottom=center-.006*aperture
         front_depth=-.119 + .0035*math.sin(math.pi*t)
         upper.append((x,front_depth-.005,top))
         lower.append((x,front_depth-.005,bottom))
@@ -186,7 +186,7 @@ for side in (-1,1):
         center=1.827+.006*t
         aperture=math.sin(math.pi*t)
         verts.append((x,-.120+.0035*math.sin(math.pi*t),
-                      center-.009*aperture))
+                      center-.006*aperture))
     faces=[(j,j+1,9+j+1,9+j) for j in range(8)]
     mesh("Face 085 | "+side_name+" visible ivory eye",verts,faces,eyewhite)
     stroke("Face 085 | "+side_name+" assertive upper eyeliner",
@@ -196,9 +196,9 @@ for side in (-1,1):
     # iris moves toward the nose for a focused confident expression
     iris_x=side*.062
     oval("Face 085 | "+side_name+" amber iris",
-         (iris_x,-.128,1.828),(.011,.003,.012),iris)
+         (iris_x,-.128,1.828),(.010,.003,.009),iris)
     oval("Face 085 | "+side_name+" dark pupil",
-         (iris_x,-.132,1.829),(.005,.002,.008),pupil)
+         (iris_x,-.132,1.829),(.004,.002,.007),pupil)
     oval("Face 085 | "+side_name+" eye specular glint",
          (iris_x-side*.004,-.135,1.833),(.002,.0015,.003),eyewhite)
     # Inward-directed stern eyebrow, tapering to temple, not a thick band.
@@ -226,6 +226,10 @@ oval("Hair 085 | close-fitting scalp",
 for i in range(25):
     a=math.tau*i/25+.08
     dx=math.cos(a);dy=math.sin(a)
+    # Forehead locks are individually art-directed below; suppress the
+    # evenly spaced radial spikes at the front of the head.
+    if dy < -.24:
+        continue
     tang=(-dy,dx,0)
     rear=max(0,dy)
     side_fraction=abs(dx)
@@ -247,22 +251,22 @@ for i in range(25):
 # Small grouped curtain fringe with asymmetry in length and direction.
 for side in (-1,1):
     name="L" if side<0 else "R"
-    for i in range(6):
-        t=i/5
-        start=side*(.012+.018*i)
-        tip=side*(.022+.021*i)
+    for i in range(4):
+        t=i/3
+        start=side*(.018+.026*i)
+        tip=side*(.041+.023*i)
         # Center locks lift above eyebrow; side locks descend toward temple.
-        tz=1.885-.033*t + .007*math.sin(2.7*i)
+        tz=1.896-.036*t + .011*math.sin(2.2*i)
         coords=[
-            (start*.55,-.046,1.970),
-            (start*.80,-.070,1.961),
-            (start,-.092,1.945),
-            ((start+tip)*.5,-.113,1.909),
-            (tip,-.123,tz)
+            (start*.35,-.055,1.974),
+            (start*.64,-.077,1.960),
+            (start,-.093,1.936),
+            ((start+tip)*.55,-.111,1.907),
+            (tip,-.119,tz)
         ]
         lock("Hair 085 | "+name+" parted fringe %d"%i,
              coords,[.010,.018,.023,.017,.0009],
-             hairl if i in (1,4) else hairbase,(1,0,0))
+             hairl if i==1 else hairbase,(1,0,0))
     # Two deliberate layered temple locks, clear of the eyes.
     for i in range(3):
         xx=side*(.107+.009*i)
