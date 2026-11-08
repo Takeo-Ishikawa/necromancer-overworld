@@ -46,7 +46,7 @@ public static class OverworldFirstCaveRoom
         patrol.patrolRadius = 2f;
         patrol.speed = 0.95f;
         var health = root.gameObject.AddComponent<OverworldHealth>();
-        health.maxHealth = 45f;
+        health.SetMaxHealth(45f);
         var combat = root.gameObject.AddComponent<OverworldAutoCombat>();
         combat.isPlayer = false;
         combat.damage = 6f;
