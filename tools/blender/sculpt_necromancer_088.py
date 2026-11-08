@@ -90,6 +90,21 @@ smooth.iterations=2
 bpy.ops.object.modifier_apply(modifier=smooth.name)
 body.select_set(False)
 
+# The earlier contour curves read as scratches over the skin at gameplay
+# scale. Rely on the actual sculpted mesh and lighting for anatomy instead.
+for obj in list(scene.objects):
+    if obj.name.startswith("Sculpt |") or (
+        obj.name.startswith("Anatomy |") and " clavicle" in obj.name
+    ):
+        if obj.type=="CURVE":
+            bpy.data.objects.remove(obj,do_unlink=True)
+# Retain dark upper-arm leather but reduce its floating tube silhouette.
+for side in ("Left","Right"):
+    armband=bpy.data.objects.get("Armor | "+side+" etched upper arm band")
+    if armband:
+        armband.scale.x*=.95
+        armband.scale.y*=.95
+
 # Part 2 — a *single* seam-free upper garment. Existing panels are kept
 # hidden in .blend and their visible copies are voxel-joined. The previous
 # detached seat and leg caps produced a very obvious triangular underwear
@@ -115,6 +130,38 @@ for original in old_parts:
     source_col.objects.link(original)
     original.hide_render=True
     original.hide_set(True)
+
+# Bridge the open groin created by the separate seat and thigh generators.
+# This anatomical fabric transition is joined into the same final voxel
+# surface — no triangle overlay or flat underwear-shaped polygon.
+bridge_rings=[
+    (.718,.080,.071,-.018),
+    (.762,.132,.103,-.018),
+    (.810,.179,.137,-.017),
+    (.872,.214,.156,-.011),
+    (.937,.224,.162,-.007),
+    (1.013,.215,.148,-.003),
+]
+bv=[]
+bc=40
+for z,rx,ry,cy in bridge_rings:
+    for idx in range(bc):
+        angle=math.tau*idx/bc
+        bv.append((rx*math.cos(angle),cy+ry*math.sin(angle),z))
+bf=[tuple(reversed(range(bc)))]
+for ring in range(len(bridge_rings)-1):
+    for idx in range(bc):
+        j=(idx+1)%bc
+        bf.append((ring*bc+idx,ring*bc+j,(ring+1)*bc+j,(ring+1)*bc+idx))
+bf.append(tuple((len(bridge_rings)-1)*bc+j for j in range(bc)))
+bridge_mesh=bpy.data.meshes.new("Garment 088 | crotch fabric bridge mesh")
+bridge_mesh.from_pydata(bv,[],bf)
+bridge_mesh.update()
+bridge=bpy.data.objects.new("Garment 088 | crotch fabric bridge",bridge_mesh)
+scene.collection.objects.link(bridge)
+bridge.data.materials.append(cloth)
+copies.append(bridge)
+
 bpy.ops.object.select_all(action="DESELECT")
 for copy in copies:copy.select_set(True)
 bpy.context.view_layer.objects.active=copies[0]
@@ -257,7 +304,7 @@ def texture_surface(mat, dark,light,scale,bump_distance,bump_strength):
     links.new(fine.outputs["Fac"],bump.inputs["Height"])
     links.new(bump.outputs["Normal"],bsdf.inputs["Normal"])
 
-texture_surface(skin,(.645,.438,.387),(.704,.495,.436),21,.00055,.12)
+texture_surface(skin,(.655,.456,.401),(.691,.485,.426),21,.00018,.07)
 texture_surface(cloth,(.051,.046,.063),(.091,.079,.104),16,.0013,.18)
 texture_surface(cloth_dark,(.047,.040,.058),(.075,.063,.084),18,.0012,.16)
 texture_surface(leather,(.107,.069,.053),(.172,.110,.077),13,.0018,.20)
