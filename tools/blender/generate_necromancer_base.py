@@ -136,10 +136,58 @@ for i in range(7):
     link("Forehead fringe %d"%i, (x, -0.09, 1.91), (x-0.026, -0.14, 1.79+(i%2)*0.035),
          0.032, 0.002, hair, 8)
 
+# Build a continuous preview surface without destroying the editable source pieces.
+# The original body meshes remain in the .blend file, in a hidden source collection.
+# Clothing, hair, face details and accessories remain independently editable.
+body_names = {
+    "Torso - chest", "Torso - waist", "Neck", "Head - face", "Jaw",
+    "Chin - defined", "Nose",
+}
+body_suffixes = (
+    " ear", " pectoral", " clavicle", " cheekbone", " deltoid",
+    " upper arm", " elbow", " forearm", " palm", " thumb",
+    " oblique", " abdominal 0", " abdominal 1", " abdominal 2",
+    " bare shin", " ankle", " bare foot",
+)
+body_source = [
+    obj for obj in list(bpy.context.scene.objects)
+    if obj.type == 'MESH' and (
+        obj.name in body_names or
+        (obj.name.startswith(("L ", "R ")) and
+         (obj.name.endswith(body_suffixes) or " toe " in obj.name or " finger " in obj.name))
+    )
+]
+if body_source:
+    source_collection = bpy.data.collections.new("Editable body source - hidden")
+    bpy.context.scene.collection.children.link(source_collection)
+    for obj in body_source:
+        duplicate = obj.copy()
+        duplicate.data = obj.data.copy()
+        source_collection.objects.link(duplicate)
+        duplicate.name = "SOURCE " + obj.name
+        duplicate.hide_render = True
+        duplicate.hide_set(True)
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in body_source:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = body_source[0]
+    bpy.ops.object.join()
+    unified = bpy.context.object
+    unified.name = "Body - continuous voxel preview"
+    unified.data.remesh_voxel_size = 0.016
+    bpy.ops.object.voxel_remesh()
+    for polygon in unified.data.polygons:
+        polygon.use_smooth = True
+    print("Continuous body preview generated; source body parts preserved in hidden collection.")
+
 # Ground-independent asset root. Individual mesh objects deliberately remain separate.
 bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(ROOT, "character_base.blend"))
-bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.select_all(action='DESELECT')
+for obj in bpy.context.scene.objects:
+    if obj.type == 'MESH' and not obj.hide_render:
+        obj.hide_set(False)
+        obj.select_set(True)
 bpy.ops.export_scene.fbx(filepath=os.path.join(ROOT, "character_base.fbx"),
     use_selection=True, object_types={'MESH'}, apply_unit_scale=True, axis_forward='-Z', axis_up='Y')
 print("Generated refined character blockout; sculpt, retopology, UV, and rigging are still required.")
