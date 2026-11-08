@@ -26,6 +26,10 @@ jobs:
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup --python tools/blender/generate_necromancer_083.py
 
+      - name: Apply 0.8.4 anatomy and concept art refinements
+        run: |
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/sculpt_necromancer_084.py
+
       - name: Render front side and back inspection images
         run: |
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --factory-startup tools/blender/character_base.blend --python tools/blender/render_character_turnaround.py
@@ -42,7 +46,7 @@ jobs:
       - name: Upload Blender and Unity-ready FBX
         uses: actions/upload-artifact@v4
         with:
-          name: necromancer-character-0-8-3-remodel
+          name: necromancer-character-0-8-4-refinement
           path: |
             tools/blender/character_base.blend
             tools/blender/character_base.fbx
