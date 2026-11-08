@@ -11,6 +11,12 @@ namespace NecromancerOverworld
 
         private void Awake() { Current = Mathf.Max(1f, maxHealth); }
 
+        public void SetMaxHealth(float value)
+        {
+            maxHealth = Mathf.Max(1f, value);
+            Current = maxHealth;
+        }
+
         public void TakeDamage(float damage)
         {
             if (!IsAlive || damage <= 0f) return;
