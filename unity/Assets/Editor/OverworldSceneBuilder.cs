@@ -72,9 +72,6 @@ public static class OverworldSceneBuilder
         var playerLifecycle = character.AddComponent<OverworldCombatLifecycle>();
         playerLifecycle.isPlayer = true;
         var necromancy = character.AddComponent<OverworldNecromancy>();
-        var combatHud = character.AddComponent<OverworldCombatHUD>();
-        combatHud.playerHealth = playerHealth;
-        combatHud.necromancy = necromancy;
 
         GameObject cameraObject = new GameObject("Main Camera");
         cameraObject.tag = "MainCamera";
@@ -112,7 +109,7 @@ public static class OverworldSceneBuilder
         OverworldVisualPass.Apply();
         OverworldCaveEntrance.Apply();
         OverworldFirstCaveRoom.Apply();
-        CreateJoystick(movement);
+        CreateJoystick(movement, playerHealth, necromancy);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
@@ -161,7 +158,25 @@ public static class OverworldSceneBuilder
         return obj;
     }
 
-    private static void CreateJoystick(OverworldPlayerController player)
+    private static Text HudText(Transform parent, string name, Vector2 anchoredPosition)
+    {
+        var obj = new GameObject(name, typeof(RectTransform), typeof(Text));
+        obj.transform.SetParent(parent, false);
+        var rect = obj.GetComponent<RectTransform>();
+        rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(340f, 38f);
+        var label = obj.GetComponent<Text>();
+        label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        label.fontSize = 27;
+        label.color = new Color(0.90f, 0.94f, 0.97f);
+        label.alignment = TextAnchor.MiddleLeft;
+        label.raycastTarget = false;
+        return label;
+    }
+
+    private static void CreateJoystick(OverworldPlayerController player, OverworldHealth playerHealth, OverworldNecromancy necromancy)
     {
         var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
         var canvasObject = new GameObject("Mobile Controls", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -170,6 +185,8 @@ public static class OverworldSceneBuilder
         var scaler = canvasObject.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0.5f;
 
         var baseObject = new GameObject("Movement Joystick", typeof(RectTransform), typeof(Image), typeof(OverworldTouchJoystick));
         baseObject.transform.SetParent(canvasObject.transform, false);
@@ -192,5 +209,39 @@ public static class OverworldSceneBuilder
         joystick.player = player;
         joystick.knob = knob;
         joystick.radius = 75f;
+
+        var hud = canvasObject.AddComponent<OverworldCanvasHUD>();
+        hud.playerHealth = playerHealth;
+        hud.necromancy = necromancy;
+        var panel = new GameObject("Combat HUD Panel", typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(canvasObject.transform, false);
+        var panelRect = panel.GetComponent<RectTransform>();
+        panelRect.anchorMin = panelRect.anchorMax = new Vector2(0f, 1f);
+        panelRect.pivot = new Vector2(0f, 1f);
+        panelRect.anchoredPosition = new Vector2(28f, -28f);
+        panelRect.sizeDelta = new Vector2(365f, 150f);
+        panel.GetComponent<Image>().color = new Color(0.07f, 0.09f, 0.14f, 0.88f);
+        hud.healthText = HudText(panel.transform, "Health", new Vector2(14f, -15f));
+        hud.animaText = HudText(panel.transform, "Anima", new Vector2(14f, -58f));
+        hud.alliesText = HudText(panel.transform, "Allies", new Vector2(14f, -101f));
+
+        var buttonObject = new GameObject("Reanimate Button", typeof(RectTransform), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(canvasObject.transform, false);
+        var buttonRect = buttonObject.GetComponent<RectTransform>();
+        buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(1f, 0f);
+        buttonRect.pivot = new Vector2(1f, 0f);
+        buttonRect.anchoredPosition = new Vector2(-55f, 115f);
+        buttonRect.sizeDelta = new Vector2(260f, 110f);
+        buttonObject.GetComponent<Image>().color = new Color(0.19f, 0.42f, 0.44f, 0.94f);
+        hud.reanimateButton = buttonObject.GetComponent<Button>();
+        var buttonLabel = HudText(buttonObject.transform, "Reanimate Label", Vector2.zero);
+        buttonLabel.text = "REANIMAR";
+        buttonLabel.alignment = TextAnchor.MiddleCenter;
+        buttonLabel.fontSize = 30;
+        var labelRect = buttonLabel.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
     }
 }
