@@ -33,8 +33,8 @@ skin = material("Skin | muted warm porcelain", (0.72, 0.50, 0.44))
 skin_depth = material("Skin | warm shading", (0.58, 0.35, 0.30))
 iris = material("Eyes | dark amber", (0.16, 0.095, 0.075))
 eyewhite = material("Eyes | ivory", (0.81, 0.71, 0.66))
-hair = material("Hair | ash lavender", (0.46, 0.42, 0.51), rough=0.76)
-hair_highlight = material("Hair | pale ash lilac", (0.63, 0.58, 0.66), rough=0.71)
+hair = material("Hair | ash lavender", (0.37, 0.34, 0.43), rough=0.76)
+hair_highlight = material("Hair | pale ash lilac", (0.54, 0.50, 0.60), rough=0.71)
 hair_shadow = material("Hair | shadow lilac", (0.35, 0.32, 0.40), rough=0.77)
 cloth = material("Trousers | midnight charcoal", (0.105, 0.091, 0.113))
 cloth_folds = material("Trousers | dark charcoal cuffs", (0.085, 0.077, 0.093))
@@ -157,7 +157,7 @@ def muscle_surface(i,a,x,y,z):
     # Shallow abdominal planes; central sternum and linea alba stay recessed.
     for zh in (1.335,1.260,1.190):
         abs_shape=math.exp(-((abs(x)-0.075)/0.052)**2-((z-zh)/0.036)**2)
-        y-=front*0.011*abs_shape
+        y-=front*0.020*abs_shape
     # Center back muscle ridge.
     back=max(0.0,math.sin(a))
     y+=back*0.010*math.exp(-(x/0.035)**2-((z-1.41)/0.24)**2)
@@ -168,7 +168,7 @@ for s,side in ((-1,"Left"),(1,"Right")):
     path_curve("Anatomy | "+side+" clavicle",[
         (s*0.02,-0.128,1.594),(s*0.085,-0.145,1.593),
         (s*0.19,-0.146,1.583),(s*0.275,-0.12,1.552)
-    ],skin_depth,0.003)
+    ],skin_depth,0.0017)
     path_curve("Anatomy | "+side+" subtle pectoral lower line",[
         (s*0.044,-0.171,1.414),(s*0.115,-0.186,1.402),
         (s*0.21,-0.183,1.418),(s*0.272,-0.146,1.448)
@@ -436,7 +436,44 @@ for s,side in ((-1,"Left"),(1,"Right")):
             (s*(.129+i*.012),.121,1.812-i*.007,.001)
         ],hair_shadow if i%2 else hair)
 
-# The meshes are deliberately separate and editable for further refinement.
+
+# Hide editable source arm/torso sections and generate a single anatomically
+# continuous shoulder region for inspection/export (not final retopology).
+# This removes the visible capped shoulder cylinders while preserving editing
+# access to the original surfaces in the .blend file.
+anatomy_parts = [
+    bpy.data.objects.get("Anatomy | continuous upper body"),
+    bpy.data.objects.get("Anatomy | Left arm"),
+    bpy.data.objects.get("Anatomy | Right arm")
+]
+if all(anatomy_parts):
+    sources = bpy.data.collections.new("Editable anatomy source | hidden")
+    bpy.context.scene.collection.children.link(sources)
+    for part in anatomy_parts:
+        replica = part.copy()
+        replica.data = part.data.copy()
+        sources.objects.link(replica)
+        replica.name = "SOURCE | "+part.name
+        replica.hide_render = True
+        replica.hide_set(True)
+    bpy.ops.object.select_all(action='DESELECT')
+    for part in anatomy_parts:
+        part.select_set(True)
+    bpy.context.view_layer.objects.active = anatomy_parts[0]
+    bpy.ops.object.join()
+    joint = bpy.context.object
+    joint.name = "Anatomy | single torso and arms preview"
+    joint.data.remesh_voxel_size = 0.009
+    bpy.ops.object.voxel_remesh()
+    smoothing = joint.modifiers.new("Blend shoulder junctions","SMOOTH")
+    smoothing.factor=0.85
+    smoothing.iterations=3
+    bpy.context.view_layer.objects.active=joint
+    bpy.ops.object.modifier_apply(modifier=smoothing.name)
+    for face in joint.data.polygons:
+        face.use_smooth=True
+
+# The accessory meshes are deliberately separate and editable.
 # Export all visible mesh and curve components; keep source in .blend.
 bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(ROOT,"character_base.blend"))
