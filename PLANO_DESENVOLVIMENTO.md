@@ -68,7 +68,9 @@ Ambos geram a cena usando `OverworldSceneBuilder.Build()`. Os secrets de licenç
 - Pendente: aprimorar navegação global dos servos e seleção de alvos; migrar barras de vida/números flutuantes de OnGUI para Canvas se necessário.
 
 **0.8 — protagonista 3D fiel à referência (em andamento)**
-- Criados script Blender para base 3D modular e renderizador de três vistas, além de workflow independente de geração/exportação para download de .blend, .fbx e imagens. Aguardando validação da execução; ainda não integrado ao Unity.
+- A base geométrica anterior (0.8.3–0.9.0) permanece apenas como protótipo técnico; o workflow anterior de Blender gera arquivos e foi validado, mas a fidelidade não foi aprovada.
+- **0.9.1 entregue:** nova pipeline isolada importa a coleção oficial `Body Male - Stylized` de Blender Studio Human Base Meshes v1.4.1 (CC0) usando Blender 4.5.15 LTS. Malha verdadeira de 12.502 vértices/12.500 faces, escala 1,90 m, fonte original preservada, primeiro passe anatômico de vértices, .blend/.fbx e quatro vistas. GitHub Actions [42523839634](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42523839634) validou a geração; a nova base ainda não foi integrada ao Unity.
+- Detalhes e licença em `docs/CHARACTER_0_9_1_BASE_ANATOMICA.md`.
 - Referência aprovada: torso musculoso descoberto, cabelo curto grisalho-lilás, calças escuras bordadas, braçadeiras e pés descalços; combate inicial com socos e chutes.
 - Pendente: escultura e retopologia de alta fidelidade, UV, texturas, rigging, animações, integração Unity e testes. Detalhes em `docs/CHARACTER_0_8.md`.
 - Economia de anima, dispensa de servos e refinamento da necromancia passam para etapa posterior.
