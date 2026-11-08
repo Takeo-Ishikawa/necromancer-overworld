@@ -29,6 +29,10 @@ Criar um protótipo Unity 3D com câmera ortográfica inclinada (2.5D), preserva
 - O HUD de atributos e o botão de reanimação agora usam Unity Canvas/uGUI com CanvasScaler. Barras de vida e números de dano ainda usam OnGUI sobreposto à cena, provisoriamente.
 - O comportamento e balanceamento ainda não foram validados em dispositivo. Não considerar a versão 0.7 aprovada antes dos testes.
 
+## Correção de compilação (2026-11-07)
+
+A execução Windows [42438140243](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42438140243) falhou durante a geração da cena com `ArgumentException: Arial.ttf is no longer a valid built in font. Please use LegacyRuntime.ttf`. A causa era `Resources.GetBuiltinResource<Font>("Arial.ttf")` em `OverworldSceneBuilder.HudText()`, introduzida na migração para Canvas. A referência foi alterada para `LegacyRuntime.ttf`. **A correção foi enviada; aguarda nova compilação para validação.**
+
 ## Como compilar
 
 Workflows GitHub Actions:
