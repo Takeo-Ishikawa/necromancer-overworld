@@ -143,20 +143,25 @@ for side,s in (("Left",-1),("Right",1)):
         ["Hands | "+side+" palm","Hands | "+side+" thumb"]+
         ["Hands | "+side+" finger %d"%i for i in range(4)]
     )
+    # The original fingerless glove was a floating cylindrical bracelet;
+    # exposed hands match the reference better while forearm bracers remain.
+    glove=bpy.data.objects.get("Armor | "+side+" fingerless glove")
+    if glove is not None:
+        bpy.data.objects.remove(glove,do_unlink=True)
     center=s*.466
     palm=loft("Hand 087 | "+side+" palm sections",[
-        (.879,center,-.033,.035,.030),
-        (.887,center,-.029,.042,.033),
-        (.902,center,-.026,.045,.035),
-        (.923,center,-.024,.046,.037),
-        (.946,center,-.020,.043,.040),
-        (.965,center,-.016,.041,.043),
+        (.879,center,-.033,.034,.030),
+        (.887,center,-.029,.041,.033),
+        (.902,center,-.026,.042,.035),
+        (.923,center,-.024,.043,.037),
+        (.946,center,-.020,.040,.040),
+        (.965,center,-.016,.039,.043),
         (.984,center,-.014,.036,.040)
     ],skin,28)
     components=[palm]
     # Fanned, subtly curved fingers with two knuckle shifts. Big middle
     # fingers are longer, little finger shorter; tips taper naturally.
-    lengths=(.057,.076,.071,.052)
+    lengths=(.069,.090,.083,.062)
     starts=(-1.5,-.5,.5,1.5)
     for i,length in enumerate(lengths):
         fx=center+starts[i]*.021
@@ -179,21 +184,8 @@ for side,s in (("Left",-1),("Right",1)):
         (.937,thumb_x-s*.009,-.030,.018,.020)
     ],skin,14))
     unified_preview(components,"Hand 087 | "+side+" continuous fingers and palm",.0034)
-    # Fine fingernail areas are separate for future texture/UV editing.
-    for i,length in enumerate(lengths):
-        fx=center+starts[i]*.021+s*.003*(i-1.5)
-        tip_z=.891-length
-        ellipsoid("Hand 087 | "+side+" nail %d"%i,
-            (fx,-.051-.004*abs(starts[i]),tip_z+.009),
-            (.0066,.0025,.008),nail,12)
-    ellipsoid("Hand 087 | "+side+" thumb nail",
-              (thumb_x+s*.021,-.073,.877),(.006,.002,.008),nail,12)
-    # Knuckles and tendons are subtle surface lines, not embedded black gaps.
-    for i in range(4):
-        fx=center+starts[i]*.021
-        line("Hand 087 | "+side+" dorsal tendon %d"%i,[
-            (fx,-.060,.920),(fx,-.062,.946)
-        ],shade,.00075)
+    # Nails and delicate tendon creases are deferred to the UV/texture stage.
+    # Raised sphere nails and separate dark tendon wires looked pasted on.
 
     # Feet are built as varying-width organic oval sections from heel to
     # toes, then toes unify with the forefoot instead of looking like beads.
@@ -244,23 +236,9 @@ for side,s in (("Left",-1),("Right",1)):
             (rad,forward,.022 if big else .019),skin,14
         ))
     unified_preview(foot_parts,"Foot 087 | "+side+" unified barefoot with toes",.004)
-    for i in range(5):
-        fx=s*.153-s*.044+i*s*.022
-        big=i==0
-        ty=-.259+(0.012*i if i>=2 else 0.005*i)
-        ellipsoid("Foot 087 | "+side+" toenail %d"%i,
-            (fx,ty-.022 if big else ty-.019,.045 if big else .041),
-            (.009 if big else .0075,.012 if big else .009,.0025),nail,12)
-
-    # Natural small ankle prominences and Achilles line, to avoid a pole calf.
+    # Toenails are reserved for texture/UV work: the earlier raised caps
+    # looked like glued-on beads at gameplay scale.
     x0=s*.153
-    ellipsoid("Anatomy 087 | "+side+" inner ankle bone",
-              (x0-s*.047,-.001,.102),(.014,.019,.018),skin,14)
-    ellipsoid("Anatomy 087 | "+side+" outer ankle bone",
-              (x0+s*.048,.010,.112),(.013,.016,.019),skin,14)
-    line("Anatomy 087 | "+side+" Achilles contour",[
-        (x0,.063,.093),(x0,.072,.145),(x0,.072,.201)
-    ],shade,.00075)
     calf=bpy.data.objects.get("Anatomy | "+side+" bare calf and heel")
     if calf:
         # Smooth shin/calf silhouette: retain anatomical leg as base.
@@ -269,6 +247,11 @@ for side,s in (("Left",-1),("Right",1)):
             front=max(0,min(1,(-y-.01)/.08))
             if .14<z<.34:
                 v.co.y-=front*.0075*gauss(z,.245,.082)
+            # Very slight malleolus transitions from the actual calf surface;
+            # no external ankle spheres that stick out like small knobs.
+            if .075<z<.145:
+                relative=(x-x0)*s
+                v.co.x+=s*.004*gauss(relative,.044,.021)*gauss(z,.108,.025)
         calf.data.update()
 
 # Blender source maintains editable curves, clothing, hair and anatomy.
