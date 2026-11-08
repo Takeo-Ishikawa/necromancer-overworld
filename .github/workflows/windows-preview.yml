@@ -1,0 +1,74 @@
+name: Necromancer Overworld Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'unity/**'
+      - '.github/workflows/windows-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: overworld-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Unity licensing configuration
+        shell: bash
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$UNITY_LICENSE" ] && [ -z "$UNITY_SERIAL" ]; then
+            echo "::error::UNITY_LICENSE or UNITY_SERIAL must be configured in repository Actions secrets."
+            exit 1
+          fi
+          if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "::error::UNITY_EMAIL and UNITY_PASSWORD are required by this GameCI licensing configuration."
+            exit 1
+          fi
+
+      - name: Build Windows x64 with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: unity
+          targetPlatform: StandaloneWindows64
+          buildMethod: OverworldWindowsBuild.BuildWindows
+          buildsPath: build
+          versioning: None
+
+      - name: Verify Windows player files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/StandaloneWindows64/NecromancerOverworld.exe
+          test -d build/StandaloneWindows64/NecromancerOverworld_Data
+          echo "### Necromancer Overworld — Windows x64" >> "$GITHUB_STEP_SUMMARY"
+          echo "Executable: NecromancerOverworld.exe" >> "$GITHUB_STEP_SUMMARY"
+          du -sh build/StandaloneWindows64 >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload complete Windows game
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-overworld-windows-x64
+          path: build/StandaloneWindows64/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
