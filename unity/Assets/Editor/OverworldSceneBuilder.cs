@@ -168,7 +168,7 @@ public static class OverworldSceneBuilder
         rect.anchoredPosition = anchoredPosition;
         rect.sizeDelta = new Vector2(340f, 38f);
         var label = obj.GetComponent<Text>();
-        label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         label.fontSize = 27;
         label.color = new Color(0.90f, 0.94f, 0.97f);
         label.alignment = TextAnchor.MiddleLeft;
