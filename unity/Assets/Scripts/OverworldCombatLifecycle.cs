@@ -30,6 +30,7 @@ namespace NecromancerOverworld
         private void HandleDeath(OverworldHealth ignored)
         {
             respawnAt = Time.time + (isPlayer ? 2f : respawnSeconds);
+            if (!isPlayer) OverworldCorpse.Spawn(transform.position);
             foreach (var r in renderers) if (r != null) r.enabled = false;
         }
 
