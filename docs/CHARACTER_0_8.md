@@ -37,3 +37,6 @@ A primeira fase não concede necromancia automaticamente. O desbloqueio da habil
 
 ## Iteração visual 0.8.1
 O gerador foi refinado com queixo, lábios, sobrancelhas, maçãs do rosto, clavículas, oblíquos, dedos separados, abas das bolsas, dobras das calças, faixa pendente do cinto e mais mechas de cabelo. Essas peças continuam modulares e simplificadas. O commit desta iteração dispara uma nova execução do workflow para validar exportação e vistas. **Não interpretar essas melhorias como escultura final ou rigging.**
+
+## Iteração visual 0.8.2 — continuidade corporal
+O workflow da 0.8.1 concluiu com sucesso (run `42442060059`). O gerador agora mantém cópias das peças anatômicas na coleção oculta `Editable body source - hidden` e gera uma superfície corporal de prévia com voxel remesh (resolução 0,016 m). Cabelo, roupa, acessórios e detalhes faciais continuam independentes. A exportação FBX seleciona apenas as peças visíveis, evitando duplicar o corpo. **Ainda não há retopologia deformável nem rig; a malha de prévia não deve ser usada diretamente para animação.** A nova versão precisa passar pelo workflow e por inspeção das três vistas.
