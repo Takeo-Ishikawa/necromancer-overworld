@@ -86,6 +86,8 @@ public static class OverworldSceneBuilder
         cameraObject.AddComponent<AudioListener>();
         var follow = cameraObject.AddComponent<OverworldCameraFollow>();
         follow.target = character.transform;
+        var healthBars = cameraObject.AddComponent<OverworldHealthBars>();
+        healthBars.worldCamera = camera;
         cameraObject.transform.position = character.transform.position + follow.offset;
         cameraObject.transform.LookAt(character.transform.position + Vector3.up);
 
