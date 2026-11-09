@@ -285,94 +285,98 @@ for name,items in groups.items():
         for old in list(ob.users_collection):
             if old!=coll:old.objects.unlink(ob)
 
-metadata={
-    "stage":"0.9.5 independently authored adult-realistic CC0 hero clothing study",
-    "source":ref["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
-    "base_collection":"Body Male - Realistic",
-    "body_vertices":original_vertices,"body_faces":original_faces,
-    "body_vertices_after":len(body.data.vertices),"body_faces_after":len(body.data.polygons),
-    "outfit_trouser_faces":len(pants.data.polygons),
-    "bracer_faces":sum(len(o.data.polygons) for o in bracers),
-    "hair_cards":len(hfaces),"hair_locks":hair_count,
-    "source_eye_meshes":len(eye_objs),"scalp_faces":len(scalp.data.polygons),
-    "comparison_source_topology_identical":False,
-    "rigged":False,"unity_character_replaced":False,
-    "known_limitations":"No original reference turnaround versioned. Initial hair and cloth are editable approximations; requires artistic approval. Adult anatomy is unmodified original CC0, not prior 0.9.4 face."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=22
-scene.cycles.use_denoising=True
-scene.render.resolution_x=620
-scene.render.resolution_y=840
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("095 | dark neutral protagonist studio")
-world.use_nodes=True
-world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.17,1)
-world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.65
-scene.world=world
-for name,xyz,power,size in (
- ("095 Key",(2.2,-3.4,4.1),690,4.1),
- ("095 Fill",(-2.9,-1.2,2.8),300,3.5),
- ("095 Rim",(-1.0,2.7,3.2),460,3.0),
-):
-    light=bpy.data.lights.new(name,"AREA")
-    obj=bpy.data.objects.new(name,light)
-    scene.collection.objects.link(obj)
-    obj.location=xyz
-    light.energy=power
-    light.shape="DISK"
-    light.size=size
-camdata=bpy.data.cameras.new("095 | orthographic realistic hero")
-camera=bpy.data.objects.new("095 | orthographic realistic hero",camdata)
-scene.collection.objects.link(camera)
-scene.camera=camera
-camdata.type="ORTHO"
-camdata.ortho_scale=2.27
-
-# Store original CC0 variants in Blender, but only the realistic hero visible.
-for o in v["stylized"]["objects"]:
-    if o.type=="MESH":o.hide_render=True
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_095.blend"))
-for cr in list(scene.objects):
-    if cr.type!="CURVE" or cr.hide_render:continue
+# 0.9.6 can reuse the official 0.9.5 adult anatomy, garment and accessory
+# objects without producing redundant export/renders or altering that stage.
+if os.environ.get("NECROMANCER_095_ASSEMBLY_ONLY") != "1":
+    metadata={
+        "stage":"0.9.5 independently authored adult-realistic CC0 hero clothing study",
+        "source":ref["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
+        "base_collection":"Body Male - Realistic",
+        "body_vertices":original_vertices,"body_faces":original_faces,
+        "body_vertices_after":len(body.data.vertices),"body_faces_after":len(body.data.polygons),
+        "outfit_trouser_faces":len(pants.data.polygons),
+        "bracer_faces":sum(len(o.data.polygons) for o in bracers),
+        "hair_cards":len(hfaces),"hair_locks":hair_count,
+        "source_eye_meshes":len(eye_objs),"scalp_faces":len(scalp.data.polygons),
+        "comparison_source_topology_identical":False,
+        "rigged":False,"unity_character_replaced":False,
+        "known_limitations":"No original reference turnaround versioned. Initial hair and cloth are editable approximations; requires artistic approval. Adult anatomy is unmodified original CC0, not prior 0.9.4 face."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=22
+    scene.cycles.use_denoising=True
+    scene.render.resolution_x=620
+    scene.render.resolution_y=840
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("095 | dark neutral protagonist studio")
+    world.use_nodes=True
+    world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.17,1)
+    world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.65
+    scene.world=world
+    for name,xyz,power,size in (
+     ("095 Key",(2.2,-3.4,4.1),690,4.1),
+     ("095 Fill",(-2.9,-1.2,2.8),300,3.5),
+     ("095 Rim",(-1.0,2.7,3.2),460,3.0),
+    ):
+        light=bpy.data.lights.new(name,"AREA")
+        obj=bpy.data.objects.new(name,light)
+        scene.collection.objects.link(obj)
+        obj.location=xyz
+        light.energy=power
+        light.shape="DISK"
+        light.size=size
+    camdata=bpy.data.cameras.new("095 | orthographic realistic hero")
+    camera=bpy.data.objects.new("095 | orthographic realistic hero",camdata)
+    scene.collection.objects.link(camera)
+    scene.camera=camera
+    camdata.type="ORTHO"
+    camdata.ortho_scale=2.27
+    
+    # Store original CC0 variants in Blender, but only the realistic hero visible.
+    for o in v["stylized"]["objects"]:
+        if o.type=="MESH":o.hide_render=True
     bpy.ops.object.select_all(action="DESELECT")
-    cr.hide_set(False);cr.select_set(True)
-    bpy.context.view_layer.objects.active=cr
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for ob in list(scene.objects):
-    if (ob.type=="MESH" and not ob.hide_render and
-        not ob.name.startswith("095 | stylized")):
-        ob.hide_set(False)
-        ob.select_set(True)
-if len(bpy.context.selected_objects)<10:
-    raise RuntimeError("Unexpectedly few realistic hero FBX meshes")
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_realistic_095.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def shot(name,where,target,scale,res=(620,840)):
-    scene.render.resolution_x,scene.render.resolution_y=res
-    camdata.ortho_scale=scale
-    camera.location=where
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("REALISTIC_HERO_RENDER",name,flush=True)
-for name,where in (
-    ("front",(0,-4.6,1.24)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3.0,-4.0,1.30)),
-):
-    shot(name,where,(0,0,1.0),2.27)
-shot("face_front",(0,-2.8,1.78),(0,0,1.75),.52,(760,760))
-shot("face_threequarter",(2.0,-2.8,1.82),(0,0,1.75),.52,(760,760))
-print("REALISTIC_HERO_COMPLETE",json.dumps(metadata),flush=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_095.blend"))
+    for cr in list(scene.objects):
+        if cr.type!="CURVE" or cr.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
+        cr.hide_set(False);cr.select_set(True)
+        bpy.context.view_layer.objects.active=cr
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in list(scene.objects):
+        if (ob.type=="MESH" and not ob.hide_render and
+            not ob.name.startswith("095 | stylized")):
+            ob.hide_set(False)
+            ob.select_set(True)
+    if len(bpy.context.selected_objects)<10:
+        raise RuntimeError("Unexpectedly few realistic hero FBX meshes")
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_realistic_095.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def shot(name,where,target,scale,res=(620,840)):
+        scene.render.resolution_x,scene.render.resolution_y=res
+        camdata.ortho_scale=scale
+        camera.location=where
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("REALISTIC_HERO_RENDER",name,flush=True)
+    for name,where in (
+        ("front",(0,-4.6,1.24)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3.0,-4.0,1.30)),
+    ):
+        shot(name,where,(0,0,1.0),2.27)
+    shot("face_front",(0,-2.8,1.78),(0,0,1.75),.52,(760,760))
+    shot("face_threequarter",(2.0,-2.8,1.82),(0,0,1.75),.52,(760,760))
+    print("REALISTIC_HERO_COMPLETE",json.dumps(metadata),flush=True)
+    
