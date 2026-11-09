@@ -105,31 +105,49 @@ widths=[(.17,.073),(.28,.077),(.41,.085),(.57,.091),
         (.72,.105),(.84,.117),(.96,.132)]
 depths=[(.17,.072),(.28,.080),(.41,.090),(.57,.100),
         (.72,.111),(.84,.122),(.96,.135)]
+# A conservative silhouette correction replaces the first attempt's
+# angular cross-section remapping. That attempt expanded the outer thighs into
+# pointed wings even though the body silhouette was unchanged.
+# Keep the ORIGINAL source-leg geometry, attenuating radial width only.
 adjusted=0
 for vert in pants.data.vertices:
     p=pants.matrix_world@vert.co
     z=p.z
-    if not .157<z<.967 or abs(p.x)<.026:
+    if not .16<z<.95 or abs(p.x)<.018:
         continue
     side=1 if p.x>0 else -1
-    cx,cy,rx,ry=slice_stats(z,side,"pants")
-    _,_,brx,bry=slice_stats(z,side,"body")
-    # Respect the original body envelope plus clearance; prevent clipping
-    # when the quad shell is made less balloon-like.
-    target_rx=max(radius_at(z,widths),brx+.011)
-    target_ry=max(radius_at(z,depths),bry+.011)
-    u=max(-1.15,min(1.15,(p.x-cx)/rx))
-    v=max(-1.15,min(1.15,(p.y-cy)/ry))
-    theta=math.atan2(v,u)
-    # Very restrained long cloth creases, not spherical knee knobs.
-    crease=.0022*math.cos(5*theta+5.8*z)*gaussian(z,.47,.33)
-    nx=cx+u*(target_rx+crease)
-    ny=cy+v*(target_ry+crease*.7)
-    weight=smooth(.86,.97,z)          # blend smoothly into the waist
-    p.x=nx*(1-weight)+p.x*weight
-    p.y=ny*(1-weight)+p.y*weight
+    leg_center=side*.136
+    taper=smooth(.16,.26,z)*(1-smooth(.72,.95,z))
+    lower_leg=gaussian(z,.41,.28)
+    width_reduction=(.075+.085*lower_leg)*taper
+    p.x=leg_center+(p.x-leg_center)*(1-width_reduction)
+    p.y=p.y*(1-.045*taper)
     vert.co=pants_inverse@p
     adjusted+=1
+
+# Smooth only X and Y over the knee/calf area; preserve all Z/hem heights.
+neighbors=[set() for _ in pants.data.vertices]
+for edge in pants.data.edges:
+    i,j=edge.vertices
+    neighbors[i].add(j)
+    neighbors[j].add(i)
+for iteration in range(4):
+    prev=[v.co.copy() for v in pants.data.vertices]
+    for i,vert in enumerate(pants.data.vertices):
+        z=(pants.matrix_world@prev[i]).z
+        if not .26<z<.71 or len(neighbors[i])<3:
+            continue
+        avg=sum((prev[k] for k in neighbors[i]),Vector())/len(neighbors[i])
+        w=.22*gaussian(z,.48,.19)
+        vert.co.x=prev[i].x*(1-w)+avg.x*w
+        vert.co.y=prev[i].y*(1-w)+avg.y*w
+
+# Guard against a repeat of the visually rejected triangular thigh expansion.
+old_upper=max(abs(p.x) for p in pants_world if .62<p.z<.90)
+new_world=[pants.matrix_world@v.co for v in pants.data.vertices]
+new_upper=max(abs(p.x) for p in new_world if .62<p.z<.90)
+if new_upper>old_upper+.004:
+    raise RuntimeError("Upper trousers silhouette unexpectedly expanded: %.4f > %.4f"%(new_upper,old_upper))
 pants.data.update()
 if adjusted<600:
     raise RuntimeError("Trouser tailoring affected too few vertices: %d"%adjusted)
@@ -174,15 +192,15 @@ if old_hair_mesh.users==0:
     bpy.data.meshes.remove(old_hair_mesh)
 scalp.name="096 | anatomical source scalp underlay (CC0 quads)"
 scalp.data.materials.clear()
-scalp_base=material("096 | subtle charcoal ash hair roots",(.158,.157,.200),.92)
+scalp_base=material("096 | subtle charcoal ash hair roots",(.12,.12,.16),.94)
 scalp.data.materials.append(scalp_base)
 for mod in scalp.modifiers:
     if mod.type=="SOLIDIFY":mod.thickness=.00075
 
 base_hair=[
- material("096 | cool silver smoke bulk",(.31,.32,.38),.84),
- material("096 | muted lavender brown sheen",(.30,.28,.37),.82),
- material("096 | deep ash between clumps",(.20,.20,.27),.90),
+ material("096 | cool silver smoke bulk",(.25,.255,.315),.87),
+ material("096 | muted lavender brown sheen",(.28,.265,.34),.87),
+ material("096 | deep ash between clumps",(.155,.155,.205),.92),
 ]
 fine_hair=material("096 | discrete silver strand accents",(.41,.41,.46),.86)
 rng=random.Random(9606)
@@ -210,6 +228,10 @@ def add_clump(zone,root,direction,length,width,thickness,arc,mat_index):
     all_clumps+=1
     root_z.append(root.z)
     direction=direction.normalized()
+    # Shorter, narrower solid locks avoid paper-like pointed spikes.
+    length*=.80
+    width*=.67
+    thickness*=.76
     tip=root+direction*length
     lateral=Vector((-direction.y,direction.x,0))
     if lateral.length<.03:lateral=Vector((1,0,0))
@@ -246,7 +268,7 @@ def add_clump(zone,root,direction,length,width,thickness,arc,mat_index):
     faces.append(tuple(offset+(rings-1)*circumference+k for k in range(circumference)))
     materials.append(mat_index)
     # A small proportion of clumps carry real editable highlight splines.
-    if all_clumps%3==0:
+    if all_clumps%2==0:
         line_shapes.append([p+perpendicular*(thickness*.53) for p in centreline[1:-1]])
 
 def select_roots(points,n):
