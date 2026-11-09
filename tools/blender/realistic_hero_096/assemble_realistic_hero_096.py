@@ -184,170 +184,168 @@ for side,name in ((-1,"L"),(1,"R")):
         coords.append(Vector((x,y,z+.002*math.sin(2*angle))))
     stitch_objects.append(create_curve("096 | "+name+" cuff antique-gold thread",coords,seam_mat,.00095))
 
-# ---- NEW HAIR: SOLID SCULPTED CLUMPS + FINE EDITABLE ACCENT CURVES ----
-# Remove the old floating paper-ribbon mesh. The old scalp remains a thin
-# object EXTRACTED FROM THE OFFICIAL CC0 HEAD and is kept independently editable.
+# ---- FIBRE GROOM: real CURVES over the official anatomical scalp ----
+# Previous sculpted clumps resembled nails over an untextured helmet. Replace
+# them with many short tapered hair fibres that conform to the ACTUAL scalp
+# surface, including nape and temples. This remains editable in the .blend.
 bpy.data.objects.remove(old_hair,do_unlink=True)
 if old_hair_mesh.users==0:
     bpy.data.meshes.remove(old_hair_mesh)
-scalp.name="096 | anatomical source scalp underlay (CC0 quads)"
+scalp.name="096 | realistic CC0 scalp underlay"
 scalp.data.materials.clear()
-scalp_base=material("096 | subtle charcoal ash hair roots",(.12,.12,.16),.94)
+scalp_base=material("096 | shaded ash-lilac rooted hair",(.15,.15,.19),.89)
 scalp.data.materials.append(scalp_base)
 for mod in scalp.modifiers:
-    if mod.type=="SOLIDIFY":mod.thickness=.00075
+    if mod.type=="SOLIDIFY":
+        mod.thickness=.00065
 
-base_hair=[
- material("096 | cool silver smoke bulk",(.25,.255,.315),.87),
- material("096 | muted lavender brown sheen",(.28,.265,.34),.87),
- material("096 | deep ash between clumps",(.155,.155,.205),.92),
+# Real directional fibre coloration; prevents a flat helmet appearance.
+nodes=scalp_base.node_tree.nodes
+links=scalp_base.node_tree.links
+waves=nodes.new("ShaderNodeTexWave")
+waves.wave_type="BANDS"
+waves.bands_direction="X"        # fine root-to-tip vertical texture at nape
+waves.inputs["Scale"].default_value=67.0
+waves.inputs["Distortion"].default_value=3.4
+ramp=nodes.new("ShaderNodeValToRGB")
+ramp.color_ramp.elements[0].position=.32
+ramp.color_ramp.elements[0].color=(.095,.092,.13,1)
+ramp.color_ramp.elements[1].position=.68
+ramp.color_ramp.elements[1].color=(.29,.29,.35,1)
+links.new(waves.outputs["Fac"],ramp.inputs["Fac"])
+links.new(ramp.outputs["Color"],nodes.get("Principled BSDF").inputs["Base Color"])
+
+fiber_colors=[
+ material("096 | silver-gray hair fibres",(.30,.30,.35),.83),
+ material("096 | lilac hair fibres",(.29,.27,.34),.86),
+ material("096 | graphite shadow fibres",(.15,.15,.20),.9),
+ material("096 | ash highlights",(.38,.38,.42),.81),
 ]
-fine_hair=material("096 | discrete silver strand accents",(.41,.41,.46),.86)
-rng=random.Random(9606)
-scalp_vertices=[scalp.matrix_world@v.co for v in scalp.data.vertices]
-if len(scalp_vertices)<200:
-    raise RuntimeError("Source scalp unexpectedly sparse")
-zones={
- "crown":[v for v in scalp_vertices if v.z>1.844 and abs(v.x)<.118],
- "fringe":[v for v in scalp_vertices if v.y<-.024 and v.z>1.812],
- "temples":[v for v in scalp_vertices if abs(v.x)>.055 and v.z>1.795],
- "nape":[v for v in scalp_vertices if v.y>.040 and 1.780<v.z<1.86],
-}
-print("SCALP_ZONES",json.dumps({k:len(v) for k,v in zones.items()}),flush=True)
-if min(len(v) for v in zones.values())<8:
-    raise RuntimeError("Not enough official scalp loops for groom zones")
+rng=random.Random(9607)
+scalp_inverse=scalp.matrix_world.inverted_safe()
+scalp_normal_transform=scalp.matrix_world.to_3x3().inverted_safe().transposed()
 
-groups={}
-line_shapes=[]
-root_z=[]
-all_clumps=0
-def add_clump(zone,root,direction,length,width,thickness,arc,mat_index):
-    global all_clumps
-    if root.z<1.775:
-        raise RuntimeError("Hair clump outside head: z=%.3f"%root.z)
-    all_clumps+=1
-    root_z.append(root.z)
-    direction=direction.normalized()
-    # Shorter, narrower solid locks avoid paper-like pointed spikes.
-    length*=.80
-    width*=.67
-    thickness*=.76
-    tip=root+direction*length
-    lateral=Vector((-direction.y,direction.x,0))
-    if lateral.length<.03:lateral=Vector((1,0,0))
-    lateral.normalize()
-    perpendicular=direction.cross(lateral)
-    if perpendicular.length<.03:perpendicular=Vector((0,0,1))
-    perpendicular.normalize()
-    # 3D tapered elliptical cross sections, not zero-thickness cards.
-    verts,faces,materials=groups.setdefault(zone,([],[],[]))
-    offset=len(verts)
-    centreline=[]
-    rings=9
-    circumference=8
-    for j in range(rings):
-        t=j/(rings-1)
-        bulge=math.sin(math.pi*t)
-        center=root.lerp(tip,t)+Vector((0,0,arc*bulge))
-        centreline.append(center)
-        profile=.04+.96*(1-t)**.67
-        w=width*profile*.5
-        h=thickness*profile*.5
-        for k in range(circumference):
-            angle=2*math.pi*k/circumference
-            pos=center+lateral*(w*math.cos(angle))+perpendicular*(h*math.sin(angle))
-            verts.append(pos)
-    for j in range(rings-1):
-        for k in range(circumference):
-            n=(k+1)%circumference
-            faces.append((offset+j*circumference+k,offset+j*circumference+n,
-                          offset+(j+1)*circumference+n,offset+(j+1)*circumference+k))
-            materials.append(mat_index)
-    faces.append(tuple(offset+k for k in range(circumference-1,-1,-1)))
-    materials.append(mat_index)
-    faces.append(tuple(offset+(rings-1)*circumference+k for k in range(circumference)))
-    materials.append(mat_index)
-    # A small proportion of clumps carry real editable highlight splines.
-    if all_clumps%2==0:
-        line_shapes.append([p+perpendicular*(thickness*.53) for p in centreline[1:-1]])
+# Triangulate polygons only in MEMORY for uniform point sampling; scalp's
+# editable inherited quad mesh is never triangulated or re-topologized.
+triangles=[]
+for polygon in scalp.data.polygons:
+    ids=list(polygon.vertices)
+    verts=[scalp.matrix_world@scalp.data.vertices[i].co for i in ids]
+    for k in range(1,len(verts)-1):
+        a0,a1,a2=verts[0],verts[k],verts[k+1]
+        n=(a1-a0).cross(a2-a0)
+        area=.5*n.length
+        if area<1e-8:continue
+        normal=n.normalized()
+        center=(a0+a1+a2)/3
+        triangles.append((a0,a1,a2,normal,center,area))
+if len(triangles)<200:
+    raise RuntimeError("Unexpectedly few source CC0 scalp triangles")
 
-def select_roots(points,n):
-    indices=list(range(len(points)))
-    rng.shuffle(indices)
-    # Cycle with seeded reshuffles to prevent random piling.
-    roots=[]
-    while len(roots)<n:
-        for idx in indices:
-            roots.append(points[idx])
-            if len(roots)>=n:break
-        rng.shuffle(indices)
-    return roots
+def region_triangles(region):
+    if region=="crown":
+        return [t for t in triangles if t[4].z>1.843]
+    if region=="fringe":
+        return [t for t in triangles if t[4].y<-.023 and t[4].z>1.811]
+    if region=="temples":
+        return [t for t in triangles if abs(t[4].x)>.051 and t[4].z>1.791]
+    if region=="nape":
+        return [t for t in triangles if t[4].y>.033 and 1.772<t[4].z<1.858]
+    raise ValueError(region)
 
-# The crown is side-swept towards the front, NOT randomly spiked in all
-# directions. Short clumps overlap naturally and cover the dark scalp.
-for p in select_roots(zones["crown"],49):
-    d=Vector((rng.uniform(-.55,-.16),rng.uniform(-1.0,-.55),rng.uniform(-.28,-.08)))
-    add_clump("crown",p+Vector((0,0,.0035)),d,
-              rng.uniform(.030,.056),rng.uniform(.010,.020),
-              rng.uniform(.003,.006),rng.uniform(.003,.010),
-              rng.choices([0,1,2],[6,2,2])[0])
+zones={r:region_triangles(r) for r in ("crown","fringe","temples","nape")}
+print("FIBRE_ZONE_FACE_COUNTS",json.dumps({k:len(v) for k,v in zones.items()}),flush=True)
+if min(map(len,zones.values()))<8:
+    raise RuntimeError("Source scalp triangles cannot support hairline zones")
 
-# Fringe defines the hairline without long paper-like spikes over the eyes.
-for p in select_roots(zones["fringe"],15):
-    d=Vector((rng.uniform(-.44,-.07),-.97,rng.uniform(-.40,-.18)))
-    add_clump("fringe",p+Vector((0,-.001,.004)),d,
-              rng.uniform(.021,.039),rng.uniform(.011,.018),
-              rng.uniform(.003,.005),rng.uniform(.003,.008),
-              rng.choices([0,1,2],[7,2,1])[0])
+def barycentric_sample(triangle):
+    p,q,r,n,center,area=triangle
+    u=math.sqrt(rng.random())
+    v=rng.random()
+    root=p*(1-u)+q*(u*(1-v))+r*(u*v)
+    return root,n
 
-for p in select_roots(zones["temples"],21):
-    sign=1 if p.x>0 else -1
-    d=Vector((sign*rng.uniform(.15,.38),rng.uniform(-.30,.30),
-              rng.uniform(-1.0,-.55)))
-    add_clump("temples",p+Vector((0,0,.0025)),d,
-              rng.uniform(.020,.042),rng.uniform(.009,.016),
-              rng.uniform(.003,.005),rng.uniform(.001,.006),
-              rng.choices([0,1,2],[5,1,4])[0])
+def closest_real_scalp(p):
+    query=scalp_inverse@p
+    hit,local,norm,face=scalp.closest_point_on_mesh(query)
+    if not hit:raise RuntimeError("Fibre guide left original scalp")
+    pos=scalp.matrix_world@local
+    normal=(scalp_normal_transform@norm).normalized()
+    return pos,normal
 
-for p in select_roots(zones["nape"],18):
-    d=Vector((rng.uniform(-.25,.25),rng.uniform(.22,.65),
-              rng.uniform(-1.0,-.60)))
-    add_clump("nape",p+Vector((0,.002,.0025)),d,
-              rng.uniform(.021,.039),rng.uniform(.010,.019),
-              rng.uniform(.003,.006),rng.uniform(.002,.006),
-              rng.choices([0,1,2],[3,1,6])[0])
+def groom_region(region,count,min_len,max_len):
+    samples=zones[region]
+    selected=rng.choices(samples,weights=[t[5] for t in samples],k=count)
+    curve=bpy.data.curves.new("096 | "+region+" individual guided fibres","CURVE")
+    curve.dimensions="3D"
+    curve.bevel_depth=.00067
+    curve.bevel_resolution=2
+    curve.resolution_u=5
+    for m in fiber_colors:curve.materials.append(m)
+    root_heights=[]
+    for index,tri in enumerate(selected):
+        root,normal=barycentric_sample(tri)
+        if root.z<1.766:
+            raise RuntimeError("Hair fibre rooted on neck or back")
+        root_heights.append(root.z)
+        if region=="crown":
+            desire=Vector((rng.uniform(-.45,-.12),rng.uniform(-1,-.52),-.23))
+        elif region=="fringe":
+            desire=Vector((rng.uniform(-.38,-.06),-1,-.45))
+        elif region=="nape":
+            desire=Vector((rng.uniform(-.20,.20),.30,-.91))
+        else:
+            side=-1 if root.x<0 else 1
+            desire=Vector((side*rng.uniform(.17,.45),
+                           rng.uniform(-.25,.16),-.78))
+        # Tangential directions follow cranial curvature, not free-floating
+        # spikes through the air.
+        tangent=desire-normal*desire.dot(normal)
+        if tangent.length<.025:
+            tangent=Vector((1,0,0))-normal*normal.x
+        tangent.normalize()
+        length=rng.uniform(min_len,max_len)
+        spline=curve.splines.new("POLY")
+        spline.points.add(6)
+        for j in range(7):
+            t=j/6
+            predicted=root+tangent*(length*t)
+            surf,surf_n=closest_real_scalp(predicted)
+            lift=.0019+.0017*math.sin(math.pi*t)
+            pt=surf+surf_n*lift
+            point=spline.points[j]
+            point.co=(pt.x,pt.y,pt.z,1)
+            # True taper: no faceted triangular nail ends.
+            point.radius=max(.05,(1-t)**.63)
+        spline.material_index=rng.choices([0,1,2,3],[6,2,3,1])[0]
+    ob=bpy.data.objects.new("096 | "+region+" short flowing fibres (editable)",curve)
+    bpy.context.scene.collection.objects.link(ob)
+    return ob,root_heights
 
 hair_objects=[]
-for zone,(verts,faces,material_ids) in groups.items():
-    mesh=bpy.data.meshes.new("096 | "+zone+" sculpted tapered locks")
-    mesh.from_pydata(verts,[],faces)
-    mesh.update()
-    for mat in base_hair:mesh.materials.append(mat)
-    for poly,mi in zip(mesh.polygons,material_ids):
-        poly.material_index=mi
-        poly.use_smooth=True
-    obj=bpy.data.objects.new("096 | hair "+zone+" • editable 3D clumps",mesh)
-    bpy.context.scene.collection.objects.link(obj)
-    hair_objects.append(obj)
-if all_clumps!=103 or len(hair_objects)!=4:
-    raise RuntimeError("Clump coverage failed")
-curve=bpy.data.curves.new("096 | strands between layered hair clumps","CURVE")
-curve.dimensions="3D"
-curve.bevel_depth=.00038
-curve.bevel_resolution=2
-curve.resolution_u=6
-curve.materials.append(fine_hair)
-for coords in line_shapes:
-    line=curve.splines.new("POLY")
-    line.points.add(len(coords)-1)
-    for point,p in zip(line.points,coords):point.co=(p.x,p.y,p.z,1)
-highlight=bpy.data.objects.new("096 | subtle fine hair accents (editable curves)",curve)
-bpy.context.scene.collection.objects.link(highlight)
+root_z=[]
+counts={"crown":820,"fringe":290,"temples":310,"nape":340}
+ranges={
+ "crown":(.018,.034),"fringe":(.016,.029),
+ "temples":(.014,.026),"nape":(.015,.029)
+}
+for region,count in counts.items():
+    hair_obj,heights=groom_region(region,count,*ranges[region])
+    hair_objects.append(hair_obj)
+    root_z.extend(heights)
+
+all_fibers=sum(counts.values())
+if all_fibers!=1760 or len(hair_objects)!=4:
+    raise RuntimeError("Missing fibre hair region")
+# Underlay and fine roots remain separate. No bulky volume fake hair caps.
+highlight=hair_objects[0]
+line_shapes=[None]*all_fibers
+print("REAL_SCALP_FIBRES",all_fibers,"min root z",min(root_z),flush=True)
 
 # Regroup only new dress and hair objects; do not disturb CC0 body group.
 hair_collection=bpy.data.collections.new("096 | separated volumetric haircut")
 bpy.context.scene.collection.children.link(hair_collection)
-for ob in [scalp,*hair_objects,highlight]:
+for ob in [scalp,*hair_objects]:
     hair_collection.objects.link(ob)
     for old in list(ob.users_collection):
         if old!=hair_collection:old.objects.unlink(ob)
@@ -376,15 +374,15 @@ metadata={
  "source_eye_mesh_hashes_unchanged":eye_hashes_before==eye_hashes_after,
  "tailored_trouser_quad_faces":len(pants.data.polygons),
  "tailored_trouser_vertices":adjusted,
- "separated_3d_hair_groups":[o.name for o in hair_objects],
- "hair_clumps":all_clumps,
- "hair_clump_root_min_z":round(min(root_z),5),
- "hair_clump_root_max_z":round(max(root_z),5),
- "highlight_splines":len(line_shapes),
- "hair_clump_mesh_faces":sum(len(o.data.polygons) for o in hair_objects),
+ "separated_fiber_groom_groups":[o.name for o in hair_objects],
+ "hair_fiber_strands":all_fibers,
+ "hair_fiber_root_min_z":round(min(root_z),5),
+ "hair_fiber_root_max_z":round(max(root_z),5),
+ "hair_group_count":len(hair_objects),
+ "original_scalp_quads":len(scalp.data.polygons),
  "separate_cuff_stitch_curves":len(stitch_objects),
  "rigged":False,"unity_character_replaced":False,
- "known_limitations":"Clump grooms and trousers are still automated prototypes, require comparison with approved visual reference (not in repository) and hand art refinements. FBX is unrigged."
+ "known_limitations":"Fibre grooms and trousers are automated prototypes, not hand-authored final character art. Approved reference is not in repository. FBX is unrigged."
 }
 (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
 

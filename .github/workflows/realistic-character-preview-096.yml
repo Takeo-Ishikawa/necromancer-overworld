@@ -1,4 +1,4 @@
-name: Necromancer 0.9.6 Adult CC0 Groom and Tailoring
+name: Necromancer 0.9.6 CC0 Fiber Groom and Tailoring
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           mkdir -p /opt/blender-4.5.15
           tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
 
-      - name: Groom and tailor 0.9.6 without editing anatomy
+      - name: Create fiber hair groom and tailored clothing without editing anatomy
         run: |
           /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/realistic_hero_096/assemble_realistic_hero_096.py
 
@@ -61,11 +61,11 @@ jobs:
           assert m['source_eye_mesh_hashes_unchanged'] is True
           assert m['tailored_trouser_quad_faces']>900
           assert m['tailored_trouser_vertices']>=600
-          assert m['hair_clumps']==103
-          assert m['hair_clump_root_min_z']>1.775
-          assert len(m['separated_3d_hair_groups'])==4
-          assert m['highlight_splines']>20
-          assert m['hair_clump_mesh_faces']>4000
+          assert m['hair_fiber_strands']>=1500
+          assert m['hair_fiber_root_min_z']>1.766
+          assert len(m['separated_fiber_groom_groups'])==4
+          assert m['hair_group_count']==4
+          assert m['original_scalp_quads']>200
           assert m['separate_cuff_stitch_curves']==2
           assert m['rigged'] is False and m['unity_character_replaced'] is False
           for filename in (
@@ -79,7 +79,7 @@ jobs:
           print('VALIDATED 0.9.6: unchanged CC0 adult anatomy with real 3D locks and cloth tailoring')
           PY
 
-      - name: Upload editable Blender FBX metrics and eight real inspection views
+      - name: Upload adult CC0 fiber groom, FBX and eight real inspection views
         uses: actions/upload-artifact@v4
         with:
           name: necromancer-realistic-0-9-6-cc0-groom-tailoring
