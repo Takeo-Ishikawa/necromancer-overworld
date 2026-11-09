@@ -44,7 +44,7 @@ def new_material(name,colour,rough=.75):
     p.inputs["Roughness"].default_value=rough
     return mat
 
-ash=new_material("094 | soft layered slate brow hairs",(.20,.205,.255),.85)
+ash=new_material("094 | soft layered slate brow hairs",(.11,.11,.15),.90)
 skin=new_material("094 | pale cool desaturated skin",(.45,.395,.405),.83)
 body.data.materials.clear()
 body.data.materials.append(skin)
@@ -60,17 +60,20 @@ for vert in body.data.vertices:
     if 1.627<z<1.840 and a<.218:
         # Narrow the rounded cheek plane, keeping nose/lips neutral.
         cheek=bell(z,1.715,.055)*ease(.045,.112,a)
-        p.x*=1.0-.095*cheek
+        p.x*=1.0-.205*cheek
         if y<-.030:
-            p.y+=.0100*bell(z,1.713,.050)*bell(a,.097,.032)
+            p.y+=.0040*bell(z,1.713,.050)*bell(a,.097,.032)
         # Square the lower jaw more strongly, stop at central chin.
         jaw=bell(z,1.652,.028)*ease(.031,.094,a)
-        p.x*=1+.122*jaw
+        p.x*=1+.032*jaw
+        # Remove lateral cheek inflation inherited from the original cartoon base.
+        if a>.058:
+            p.x*=1-.095*bell(z,1.697,.045)*ease(.058,.126,a)
         if y<-.033:
             p.y-=.008*bell(z,1.645,.025)*bell(a,.025,.055)
         # Suppress youthful bulbous cheeks and soften protruding lips.
         if y<-.045:
-            p.y+=.0060*bell(z,1.672,.026)*bell(a,0,.055)
+            p.y+=.0042*bell(z,1.672,.026)*bell(a,0,.055)
             p.y-=.0040*bell(z,1.718,.031)*bell(a,.012,.019)
         # Stronger upper orbital ridge / more grown-up eye aperture.
         if y<-.059 and .019<a<.104:
@@ -81,7 +84,8 @@ for vert in body.data.vertices:
             p.y-=.0050*bell(z,1.781,.018)*bell(a,.057,.032)
         # Visibly narrower nose bridge and more refined nose root.
         if y<-.067 and .004<a<.059:
-            p.x*=1-.065*bell(z,1.729,.036)*bell(a,.023,.023)
+            p.x*=1-.070*bell(z,1.729,.036)*bell(a,.023,.023)
+            p.x*=1-.055*bell(z,1.708,.027)*bell(a,.032,.027)
         # The original stylized ears protrude far beyond the face;
         # narrow their lateral and vertical extent, preserving ear loops.
         if a>.119 and -.064<y<.125:
@@ -168,7 +172,7 @@ for sign,label in ((-1,"L"),(1,"R")):
         t=i/(n-1)
         x=sign*(.026+.062*t)
         z=1.777+.0045*math.sin(math.pi*t)-.0065*t
-        half_width=.0010+.0039*(math.sin(math.pi*t)**.8)
+        half_width=.0005+.00175*(math.sin(math.pi*t)**.8)
         for dz in (-half_width,half_width):
             surface=face_surface(x,z+dz)
             if surface is None:raise RuntimeError("Eyebrow does not project on face")
