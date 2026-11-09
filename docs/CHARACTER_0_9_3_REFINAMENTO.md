@@ -25,4 +25,21 @@ Este passe parte das **mesmas 12.502 vértices e 12.500 faces** da malha oficial
 
 ## Execuções verificadas
 
-Esta seção deverá ser atualizada somente após a inspeção das imagens reais e dos artefatos produzidos.
+### Primeiro teste
+
+- Workflow [42538292491](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42538292491): **sucesso**. O pacote trouxe arquivos Blender/FBX e sete renders.
+- As novas mechas cobriram melhor a cabeça e eliminaram boa parte do efeito de capacete da 0.9.2, embora algumas pontas permaneçam artificiais.
+- As calças ficaram menos bulbosas, mas havia faixas horizontais evidentes nos joelhos.
+- A expressão facial continuou juvenil; olhos grandes demais para o personagem adulto desejado.
+
+### Correção e inspeção final desta sessão
+
+- Workflow [42538622696](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42538622696): **sucesso confirmado**.
+- Artefato: `necromancer-anatomical-0-9-3-cc0-preview`, ID **13640223405**, aproximadamente 10,4 MB.
+- Inclui: `necromancer_character_093.blend`, `necromancer_character_093.fbx`, vistas `front`, `side`, `back`, `threequarter`, `face_front`, `face_threequarter`, `trousers_detail` e dois arquivos JSON.
+- Ajustes posteriores: compressão adicional da abertura ocular/orelha, sobrancelha afilada e nove iterações de relaxamento horizontal na malha da calça.
+- **Metadados verificados**: 12.502 vértices e 12.500 faces no corpo antes/depois do passe; 2.403 vértices de roupa alterados; 2.926 quads de calça; 485 mechas e 2.910 quads de cards; 4 curvas de pálpebras/sobrancelhas; 8 linhas de bordado; 2 olhos CC0 preservados.
+- Nas sete imagens reais, a calça está visivelmente mais lisa que no primeiro teste e que na 0.9.2. O cabelo ganhou volume/cobertura mais convincente. Olhos, sobrancelhas e mandíbula continuam necessitando correção artística.
+
+**Avaliação:** base técnica melhorada, **não aprovada artisticamente**. O rosto ainda é expressivamente genérico/juvenil frente ao conceito de necromante adulto, especialmente em olhos, boca e orelhas. As calças agora têm silhueta mais regular, mas ainda devem ganhar pregas e costuras desenhadas de forma artística. Cabelo precisa de distribuição de mechas mais dirigida por referências laterais e traseiras. Como a folha original aprovada não está versionada neste repositório, não é correto afirmar fidelidade ao conceito visual. Não houve mudanças em `unity/`, rigging ou animações.
+
