@@ -95,6 +95,17 @@ pants=shell("095 | separate dark trousers",
      lambda c,pts:.155<c.z<1.055 and abs(c.x)<.325 and
                  all(abs(q.x)<.36 for q in pts),
      cloth,.028,pant_drape,minimum=800)
+# Conservative lower-leg taper on the extracted cloth only. Keep
+# ankle clearance and the source body entirely untouched.
+for vertex in pants.data.vertices:
+    p=pants.matrix_world@vertex.co
+    if .17<p.z<.68 and abs(p.x)>.015:
+        t=((.68-p.z)/(.68-.17))**1.3
+        sg=1 if p.x>0 else -1
+        p.x=sg*.169+(p.x-sg*.169)*(1-.11*t)
+        p.y*=1-.075*t
+        vertex.co=pants.matrix_world.inverted_safe()@p
+pants.data.update()
 
 bracers=[]
 for sign,label in ((-1,"left"),(1,"right")):
@@ -105,7 +116,7 @@ for sign,label in ((-1,"left"),(1,"right")):
     bracers.append(b)
 
 def cap_mask(c,pts):
-    threshold=1.837 if c.y<-.026 else 1.819
+    threshold=(1.837 if c.y<-.026 else (1.806 if c.y<.032 else 1.766))
     return c.z>threshold and all(p.z>threshold-.009 for p in pts)
 scalp=shell("095 | editable scalp foundation from CC0 head",
             cap_mask,scalp_mat,.003,minimum=60)
@@ -121,7 +132,8 @@ headpoints=[p.copy() for p in pworld if abs(p.x)<.14 and p.z>1.79]
 crown=[p for p in headpoints if p.z>1.855]
 fringe=[p for p in headpoints if p.z>1.83 and p.y<-.023]
 side=[p for p in headpoints if abs(p.x)>.055 and p.z>1.805]
-if min(len(crown),len(fringe),len(side))<20:
+nape=[p for p in pworld if p.y>.045 and .775<p.z<1.86 and abs(p.x)<.13]
+if min(len(crown),len(fringe),len(side),len(nape))<20:
     raise RuntimeError("Realistic scalp sampling missing: "+repr((len(crown),len(fringe),len(side))))
 hverts=[];hfaces=[];mi=[];hair_count=0
 def strand(root,tip,width,mat_index,arc):
@@ -168,6 +180,16 @@ for k in range(45):
     length=rng.uniform(.022,.042)
     strand(p,p+direction*length,rng.uniform(.010,.017),
            rng.choices((0,1,2),(7,2,3))[0],rng.uniform(.002,.008))
+# Nape: short tapered back locks anchored on the real posterior scalp.
+# Without these, the back of the head appears bald from the game camera.
+for k in range(90):
+    p=rng.choice(nape).copy()
+    p.z+=.003
+    direction=Vector((rng.uniform(-.18,.18),rng.uniform(.05,.4),
+                      rng.uniform(-1.0,-.50))).normalized()
+    length=rng.uniform(.022,.050)
+    strand(p,p+direction*length,rng.uniform(.012,.021),
+           rng.choices((0,1,2),(4,1,6))[0],rng.uniform(.001,.006))
 
 hairmesh=bpy.data.meshes.new("095 | editable ash lilac layered hair ribbons")
 hairmesh.from_pydata(hverts,[],hfaces)
