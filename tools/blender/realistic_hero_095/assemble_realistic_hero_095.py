@@ -41,11 +41,11 @@ leather=mat("095 | smoked brown leather",(.13,.078,.064),.72)
 leather_edge=mat("095 | worn leather highlights",(.20,.12,.095),.68)
 gold=mat("095 | aged dull gold",(.44,.29,.11),.49,.57)
 scalp_mat=mat("095 | hair dark roots",(.19,.19,.25),.86)
-hair_col=[mat("095 | ash silver main",(.41,.42,.49),.73),
-          mat("095 | silver lilac tones",(.34,.32,.43),.78),
-          mat("095 | cool graphite underlayers",(.25,.24,.30),.8)]
-iris=mat("095 | steel blue eye iris",(.26,.30,.35),.50)
-pupil=mat("095 | dark charcoal pupils",(.024,.022,.028),.50)
+hair_col=[mat("095 | ash silver main",(.27,.28,.33),.82),
+          mat("095 | silver lilac tones",(.35,.33,.40),.82),
+          mat("095 | cool graphite underlayers",(.17,.17,.22),.87)]
+iris=mat("095 | understated grey eye iris",(.31,.32,.34),.72)
+pupil=mat("095 | soft dark pupil",(.085,.081,.094),.66)
 body.data.materials.clear()
 body.data.materials.append(skin)
 bpy.context.view_layer.update()
@@ -146,27 +146,27 @@ def strand(root,tip,width,mat_index,arc):
         hfaces.append((start+2*i,start+2*i+1,start+2*i+3,start+2*i+2))
         mi.append(mat_index)
 
-for k in range(230):
+for k in range(150):
     p=rng.choice(crown).copy()
     p.z+=.003
-    direction=Vector((rng.uniform(-.48,.25),rng.uniform(-.84,-.27),rng.uniform(-.38,-.12))).normalized()
-    length=rng.uniform(.039,.084)
-    strand(p,p+direction*length,rng.uniform(.007,.014),
+    direction=Vector((rng.uniform(-.65,-.14),rng.uniform(-.94,-.50),rng.uniform(-.18,-.04))).normalized()
+    length=rng.uniform(.027,.058)
+    strand(p,p+direction*length,rng.uniform(.012,.020),
            rng.choices((0,1,2),(7,2,2))[0],rng.uniform(.003,.011))
-for k in range(110):
+for k in range(55):
     p=rng.choice(fringe).copy()
     p.z+=.003
-    direction=Vector((rng.uniform(-.43,.19),-1.0,rng.uniform(-.60,-.17))).normalized()
-    length=rng.uniform(.027,.067)
-    strand(p,p+direction*length,rng.uniform(.006,.013),
+    direction=Vector((rng.uniform(-.73,-.13),-1.0,rng.uniform(-.34,-.09))).normalized()
+    length=rng.uniform(.021,.046)
+    strand(p,p+direction*length,rng.uniform(.011,.018),
            rng.choices((0,1,2),(7,3,2))[0],rng.uniform(.001,.006))
-for k in range(90):
+for k in range(45):
     p=rng.choice(side).copy()
     p.z+=.003
     s=1 if p.x>0 else -1
     direction=Vector((s*rng.uniform(.08,.4),rng.uniform(-.2,.3),rng.uniform(-1.0,-.4))).normalized()
-    length=rng.uniform(.026,.059)
-    strand(p,p+direction*length,rng.uniform(.006,.012),
+    length=rng.uniform(.022,.042)
+    strand(p,p+direction*length,rng.uniform(.010,.017),
            rng.choices((0,1,2),(7,2,3))[0],rng.uniform(.002,.008))
 
 hairmesh=bpy.data.meshes.new("095 | editable ash lilac layered hair ribbons")
@@ -246,8 +246,8 @@ def iris_disk(obj,scale,material,name):
     return mesh_obj(name,points,[(0,i+1,(i+1)%24+1) for i in range(24)],material)
 for eye in eye_objs:
     suffix="L" if eye.name.endswith(".L") else "R"
-    iris_disk(eye,.009,iris,"095 | "+suffix+" muted steel iris")
-    iris_disk(eye,.004,pupil,"095 | "+suffix+" small pupil")
+    iris_disk(eye,.0055,iris,"095 | "+suffix+" muted steel iris")
+    iris_disk(eye,.0025,pupil,"095 | "+suffix+" small pupil")
 
 # Group components for easy future editing.
 groups={
