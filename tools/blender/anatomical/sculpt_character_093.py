@@ -419,107 +419,110 @@ for label,keywords in (
             if original_group!=group:
                 original_group.objects.unlink(ob)
 
-# Export and review target should never touch Unity or overwrite 0.9.2 source.
-for ob in bpy.context.scene.objects:
-    if ob.name.startswith("092 |"):
-        ob.name=ob.name.replace("092 |","093 |",1)
-body.name="093 | Blender Studio Body Male Stylized — adult sculpt CC0"
-bpy.context.view_layer.update()
-metadata={
-  "stage":"0.9.3 - adult facial adjustment, eyebrow/eye proportion, layered scalp-anchored groom, trouser silhouette",
-  "source":base["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
-  "asset_file":source_entry["file"],"asset_datablock":stage["source_name"],
-  "blender_version":bpy.app.version_string,
-  "base_vertices":stage["original_vertex_count"],
-  "base_faces":stage["original_face_count"],
-  "body_vertices_after_sculpt":len(body.data.vertices),
-  "body_faces_after_sculpt":len(body.data.polygons),
-  "tailored_cloth_vertices":tailored,"trouser_quads":len(trousers.data.polygons),
-  "bracer_quads":sum(len(b.data.polygons) for b in bracers),
-  "scalp_quads":len(scalp.data.polygons),
-  "hair_strand_count":strand_count,"hair_cards":len(new_mesh.polygons),
-  "eyebrow_eyelid_curves":eyelid_lines,
-  "embroidered_curve_count":embroidery,
-  "source_eye_objects":eye_sources,
-  "rigged":False,"unity_character_replaced":False,
-  "known_limitations":"Model still requires direct comparison with unversioned approved reference. Hair cards, cloth silhouette and face remain generated drafts; not hand sculpted production art."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-(OUT/"asset_catalog.json").write_text(json.dumps(base["entries"],indent=2),encoding="utf-8")
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=20
-scene.cycles.use_denoising=True
-scene.render.resolution_x=620
-scene.render.resolution_y=840
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-scene.render.film_transparent=False
-world=bpy.data.worlds.new("093 | sculpt review studio")
-world.use_nodes=True
-bg=world.node_tree.nodes.get("Background")
-bg.inputs["Color"].default_value=(.16,.16,.18,1)
-bg.inputs["Strength"].default_value=.6
-scene.world=world
-for name,pos,power,size in (
-    ("093 key",(2.2,-3.5,4),520,4.4),
-    ("093 fill",(-2.8,-1.1,3),270,3.7),
-    ("093 rim",(-1.0,2.7,3.0),430,3.1),
-):
-    ld=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,ld)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    ld.energy=power
-    ld.shape="DISK"
-    ld.size=size
-camdata=bpy.data.cameras.new("093 | orthographic review camera")
-camera=bpy.data.objects.new("093 | orthographic review camera",camdata)
-scene.collection.objects.link(camera)
-scene.camera=camera
-camdata.type="ORTHO"
-camdata.ortho_scale=2.23
-
-# Save original editable curves/hair, BEFORE temporary FBX conversion.
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_character_093.blend"))
-for cr in [ob for ob in bpy.context.scene.objects if ob.type=="CURVE" and not ob.hide_render]:
+# The 0.9.4 sculpt may reuse the fully generated 0.9.3 scene without export.
+if os.environ.get("NECROMANCER_093_BUILD_ONLY") != "1":
+    # Export and review target should never touch Unity or overwrite 0.9.2 source.
+    for ob in bpy.context.scene.objects:
+        if ob.name.startswith("092 |"):
+            ob.name=ob.name.replace("092 |","093 |",1)
+    body.name="093 | Blender Studio Body Male Stylized — adult sculpt CC0"
+    bpy.context.view_layer.update()
+    metadata={
+      "stage":"0.9.3 - adult facial adjustment, eyebrow/eye proportion, layered scalp-anchored groom, trouser silhouette",
+      "source":base["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
+      "asset_file":source_entry["file"],"asset_datablock":stage["source_name"],
+      "blender_version":bpy.app.version_string,
+      "base_vertices":stage["original_vertex_count"],
+      "base_faces":stage["original_face_count"],
+      "body_vertices_after_sculpt":len(body.data.vertices),
+      "body_faces_after_sculpt":len(body.data.polygons),
+      "tailored_cloth_vertices":tailored,"trouser_quads":len(trousers.data.polygons),
+      "bracer_quads":sum(len(b.data.polygons) for b in bracers),
+      "scalp_quads":len(scalp.data.polygons),
+      "hair_strand_count":strand_count,"hair_cards":len(new_mesh.polygons),
+      "eyebrow_eyelid_curves":eyelid_lines,
+      "embroidered_curve_count":embroidery,
+      "source_eye_objects":eye_sources,
+      "rigged":False,"unity_character_replaced":False,
+      "known_limitations":"Model still requires direct comparison with unversioned approved reference. Hair cards, cloth silhouette and face remain generated drafts; not hand sculpted production art."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    (OUT/"asset_catalog.json").write_text(json.dumps(base["entries"],indent=2),encoding="utf-8")
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=20
+    scene.cycles.use_denoising=True
+    scene.render.resolution_x=620
+    scene.render.resolution_y=840
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    scene.render.film_transparent=False
+    world=bpy.data.worlds.new("093 | sculpt review studio")
+    world.use_nodes=True
+    bg=world.node_tree.nodes.get("Background")
+    bg.inputs["Color"].default_value=(.16,.16,.18,1)
+    bg.inputs["Strength"].default_value=.6
+    scene.world=world
+    for name,pos,power,size in (
+        ("093 key",(2.2,-3.5,4),520,4.4),
+        ("093 fill",(-2.8,-1.1,3),270,3.7),
+        ("093 rim",(-1.0,2.7,3.0),430,3.1),
+    ):
+        ld=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,ld)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        ld.energy=power
+        ld.shape="DISK"
+        ld.size=size
+    camdata=bpy.data.cameras.new("093 | orthographic review camera")
+    camera=bpy.data.objects.new("093 | orthographic review camera",camdata)
+    scene.collection.objects.link(camera)
+    scene.camera=camera
+    camdata.type="ORTHO"
+    camdata.ortho_scale=2.23
+    
+    # Save original editable curves/hair, BEFORE temporary FBX conversion.
     bpy.ops.object.select_all(action="DESELECT")
-    cr.hide_set(False)
-    cr.select_set(True)
-    bpy.context.view_layer.objects.active=cr
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for ob in bpy.context.scene.objects:
-    if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("SOURCE"):
-        ob.hide_set(False)
-        ob.select_set(True)
-assert len(bpy.context.selected_objects)>=8
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_character_093.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def render(name,loc,target,scale,res=(620,840)):
-    scene.render.resolution_x=res[0]
-    scene.render.resolution_y=res[1]
-    camdata.ortho_scale=scale
-    camera.location=loc
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("character_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_093",name,scene.render.filepath,flush=True)
-
-for name,loc in (
-    ("front",(0,-4.6,1.25)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3.0,-4.0,1.30)),
-):
-    render(name,loc,(0,0,1.0),2.23)
-render("face_front",(0,-2.6,1.77),(0,0,1.75),.49,(760,760))
-render("face_threequarter",(1.5,-2.3,1.8),(0,0,1.75),.50,(760,760))
-render("trousers_detail",(1.3,-3.0,.73),(0,0,.60),.99,(760,760))
-print("SUCCESS_093",json.dumps(metadata),flush=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_character_093.blend"))
+    for cr in [ob for ob in bpy.context.scene.objects if ob.type=="CURVE" and not ob.hide_render]:
+        bpy.ops.object.select_all(action="DESELECT")
+        cr.hide_set(False)
+        cr.select_set(True)
+        bpy.context.view_layer.objects.active=cr
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in bpy.context.scene.objects:
+        if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("SOURCE"):
+            ob.hide_set(False)
+            ob.select_set(True)
+    assert len(bpy.context.selected_objects)>=8
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_character_093.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def render(name,loc,target,scale,res=(620,840)):
+        scene.render.resolution_x=res[0]
+        scene.render.resolution_y=res[1]
+        camdata.ortho_scale=scale
+        camera.location=loc
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("character_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_093",name,scene.render.filepath,flush=True)
+    
+    for name,loc in (
+        ("front",(0,-4.6,1.25)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3.0,-4.0,1.30)),
+    ):
+        render(name,loc,(0,0,1.0),2.23)
+    render("face_front",(0,-2.6,1.77),(0,0,1.75),.49,(760,760))
+    render("face_threequarter",(1.5,-2.3,1.8),(0,0,1.75),.50,(760,760))
+    render("trousers_detail",(1.3,-3.0,.73),(0,0,.60),.99,(760,760))
+    print("SUCCESS_093",json.dumps(metadata),flush=True)
+    
