@@ -182,6 +182,72 @@ for sign,side in ((-1,"L"),(1,"R")):
     hem_rings.append(verts[:circumference])
 assert len(legs)==2 and len(upper.data.polygons)>200
 
+# Bridge the genuine CC0-derived crotch/waist panel to the upper leg tubes.
+# Without this smooth transition, the pelvis shell looked like SHORTS layered
+# over unrelated leggings in real first-run renders. Build connecting cloth
+# quad strips directly from its open lower boundary (no body mesh changes).
+from collections import Counter
+boundary_counts=Counter()
+for face in selected_faces:
+    for ia,ib in zip(face,face[1:]+face[:1]):
+        boundary_counts[tuple(sorted((ia,ib)))]+=1
+connectors=[]
+connector_faces_total=0
+for sign,side in ((-1,"L"),(1,"R")):
+    edges=[]
+    for (ia,ib),count in boundary_counts.items():
+        if count!=1:
+            continue
+        a=Vector(vertices[lookup[ia]])
+        b=Vector(vertices[lookup[ib]])
+        mid=(a+b)*.5
+        if mid.z<.875 and sign*mid.x>.028 and sign*a.x>.008 and sign*b.x>.008:
+            edges.append((ia,ib))
+    if len(edges)<12:
+        raise RuntimeError("Missing source lower clothing boundary on "+side+": "+str(len(edges)))
+    ids=sorted(set(i for edge in edges for i in edge))
+    indexing={key:i for i,key in enumerate(ids)}
+    points=[]
+    target_positions=[]
+    for original_id in ids:
+        start=Vector(vertices[lookup[original_id]])
+        z_target=max(.67,min(.735,start.z-.062))
+        cx,cy,rx,ry=profile(z_target,sign)
+        theta=math.atan2((start.y-cy)/max(.035,ry),
+                         (start.x-cx)/max(.035,rx))
+        destination=Vector((cx+(rx+.0015)*math.cos(theta),
+                            cy+(ry+.0015)*math.sin(theta),z_target))
+        target_positions.append(destination)
+    for step in range(4):
+        t=step/3
+        for original_id,dest in zip(ids,target_positions):
+            start=Vector(vertices[lookup[original_id]])
+            # S-curve easing blends shorts' lower edge into the actual
+            # independent leg surface, eliminating the floating hem.
+            eased=smooth(0,1,t)
+            points.append(start.lerp(dest,eased))
+    stride=len(ids)
+    faces=[]
+    for ia,ib in edges:
+        a=indexing[ia];b=indexing[ib]
+        for step in range(3):
+            faces.append((step*stride+a,step*stride+b,
+                          (step+1)*stride+b,(step+1)*stride+a))
+    m=bpy.data.meshes.new("097 | "+side+" stitched upper leg transition")
+    m.from_pydata(points,[],faces)
+    m.update()
+    m.materials.append(cloth)
+    for face in m.polygons:face.use_smooth=True
+    o=bpy.data.objects.new("097 | "+side+" blended upper cloth bridge",m)
+    bpy.context.scene.collection.objects.link(o)
+    solid=o.modifiers.new("Thin woven joining fabric","SOLIDIFY")
+    solid.thickness=.0016
+    connectors.append(o)
+    connector_faces_total+=len(m.polygons)
+# Nearly disable the thick lip at the source-pelvis lower boundary.
+# This lip was the main source of the artificial shorts-over-leggings seam.
+sol.thickness=.00035
+
 # Open, fabric-thickened cuffs; no fake metallic hoops hanging in the air.
 cuffs=[]
 for sign,side in ((-1,"L"),(1,"R")):
@@ -304,7 +370,7 @@ assert hair_count==265
 # Organize pieces for editing without joining/sculpting the adult body.
 cloth_collection=bpy.data.collections.new("097 | independent sewn cloth tailoring")
 bpy.context.scene.collection.children.link(cloth_collection)
-for ob in [upper,*legs,*cuffs,*seams]:
+for ob in [upper,*legs,*connectors,*cuffs,*seams]:
     cloth_collection.objects.link(ob)
     for original in list(ob.users_collection):
         if original!=cloth_collection:original.objects.unlink(ob)
@@ -332,6 +398,8 @@ metadata={
  "upper_pelvis_source_faces":len(upper.data.polygons),
  "independent_leg_count":len(legs),
  "independent_leg_quads":[len(o.data.polygons) for o in legs],
+ "bridged_upper_leg_count":len(connectors),
+ "bridge_quad_faces":connector_faces_total,
  "leg_ring_count":loft_sections,
  "leg_ring_vertices":circumference,
  "fabric_cuff_count":len(cuffs),
