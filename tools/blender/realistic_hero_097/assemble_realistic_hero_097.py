@@ -301,6 +301,35 @@ for old in previous["stitch_objects"]:
     old.hide_render=True
     old.hide_set(True)
 
+# Visual verdict on the loft trial: the pelvis and the independent legs could
+# not be united smoothly with surface-only bridging; bands were conspicuous
+# in the second real render. Preserve the experiment AS HIDDEN OBJECTS in
+# Blender, but never render/export a visually rejected shorts/leggings seam.
+experimental_components=[upper,*legs,*connectors,*cuffs,*seams]
+for ob in experimental_components:
+    ob.hide_render=True
+    ob.hide_set(True)
+old_pants.hide_set(False)
+old_pants.hide_render=False
+old_pants.name="097 | seamless anatomical-quad cloth (approved comparison surface)"
+old_pants.data.materials.clear()
+old_pants.data.materials.append(cloth)
+# Add a subtle woven microstructure to the continuous garment, avoiding
+# the inflated radial relief of previous unsuccessful tailoring experiments.
+nodes=cloth.node_tree.nodes
+links=cloth.node_tree.links
+noise=nodes.new("ShaderNodeTexNoise")
+noise.inputs["Scale"].default_value=125
+noise.inputs["Detail"].default_value=2.2
+microbump=nodes.new("ShaderNodeBump")
+microbump.inputs["Strength"].default_value=.10
+microbump.inputs["Distance"].default_value=.0011
+links.new(noise.outputs["Fac"],microbump.inputs["Height"])
+links.new(microbump.outputs["Normal"],
+          nodes.get("Principled BSDF").inputs["Normal"])
+if not old_pants.hide_render==False or any(not ob.hide_render for ob in experimental_components):
+    raise RuntimeError("Rejected loft components should be hidden from export")
+
 # -------- LONGER, SOFTLY RAISED UPPER HAIR ON EXISTING CC0 SCALP --------
 # Keep 0.9.6's 1760 fine guided fibres and replace only the crown/fringe
 # silhouette with lightweight complementary layered hair strands. They are
@@ -398,7 +427,9 @@ metadata={
  "upper_pelvis_source_faces":len(upper.data.polygons),
  "independent_leg_count":len(legs),
  "independent_leg_quads":[len(o.data.polygons) for o in legs],
- "bridged_upper_leg_count":len(connectors),
+ "visible_seamless_garment":"096-source-quads-with-097-woven-material",
+ "independent_loft_experiment_hidden":True,
+  "bridged_upper_leg_count":len(connectors),
  "bridge_quad_faces":connector_faces_total,
  "leg_ring_count":loft_sections,
  "leg_ring_vertices":circumference,

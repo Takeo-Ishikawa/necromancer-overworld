@@ -68,6 +68,8 @@ jobs:
           assert m['leg_ring_count']>=24 and m['leg_ring_vertices']>=24
           assert m['fabric_cuff_count']==2
           assert m['side_stitch_curve_count']==2
+          assert m['independent_loft_experiment_hidden'] is True
+          assert m['visible_seamless_garment']=='096-source-quads-with-097-woven-material'
           assert m['base_fibre_strands']==1760
           assert m['added_swept_upper_fibers']>=200
           assert m['added_upper_groom_groups']==2
