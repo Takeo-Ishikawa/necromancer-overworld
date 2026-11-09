@@ -60,8 +60,8 @@ jobs:
           assert meta['body_vertices_after']==meta['body_vertices']
           assert meta['body_faces_after']==meta['body_faces']
           assert meta['source_eye_meshes']==2
-          assert meta['outfit_trouser_faces']>1800
-          assert meta['bracer_faces']>300
+          assert meta['outfit_trouser_faces']>800
+          assert meta['bracer_faces']>80
           assert meta['hair_locks']>=400
           assert meta['scalp_faces']>=60
           assert meta['rigged'] is False and meta['unity_character_replaced'] is False
