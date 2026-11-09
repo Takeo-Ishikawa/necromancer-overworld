@@ -363,101 +363,104 @@ eye_hashes_after=[geometry_digest(o) for o in base_eye_objects]
 assert face_hash_after==face_hash_before
 assert eye_hashes_after==eye_hashes_before
 
-metadata={
- "stage":"0.9.6 redesigned groom and tailored silhouette on unmodified adult CC0 body",
- "source":stage["ref"]["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
- "base_collection":"Body Male - Realistic",
- "body_vertices":len(body.data.vertices),
- "body_faces":len(body.data.polygons),
- "body_coordinate_sha256_before":face_hash_before,
- "body_coordinate_sha256_after":face_hash_after,
- "source_eye_mesh_hashes_unchanged":eye_hashes_before==eye_hashes_after,
- "tailored_trouser_quad_faces":len(pants.data.polygons),
- "tailored_trouser_vertices":adjusted,
- "separated_fiber_groom_groups":[o.name for o in hair_objects],
- "hair_fiber_strands":all_fibers,
- "hair_fiber_root_min_z":round(min(root_z),5),
- "hair_fiber_root_max_z":round(max(root_z),5),
- "hair_group_count":len(hair_objects),
- "original_scalp_quads":len(scalp.data.polygons),
- "separate_cuff_stitch_curves":len(stitch_objects),
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"Fibre grooms and trousers are automated prototypes, not hand-authored final character art. Approved reference is not in repository. FBX is unrigged."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-
-# Studio camera and lights exclusively for genuine Blender geometry reviews.
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=24
-scene.cycles.use_denoising=True
-scene.render.image_settings.file_format="PNG"
-scene.render.resolution_percentage=100
-scene.render.film_transparent=False
-world=bpy.data.worlds.new("096 | graphite neutral product studio")
-world.use_nodes=True
-world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.135,.138,.16,1)
-world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.7
-scene.world=world
-for name,pos,power,size in (
- ("096 | Key",(2.2,-3.5,4.3),630,4.2),
- ("096 | Fill",(-2.7,-1.4,2.7),300,3.5),
- ("096 | Rim",(-1.2,2.6,3.2),480,3.0),
-):
-    l=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,l)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    l.energy=power
-    l.shape="DISK"
-    l.size=size
-
-camdata=bpy.data.cameras.new("096 | true orthographic inspection")
-cam=bpy.data.objects.new("096 | true orthographic inspection",camdata)
-scene.collection.objects.link(cam)
-scene.camera=cam
-camdata.type="ORTHO"
-
-# Save .blend with original editable curves prior to FBX conversion.
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_096.blend"))
-for cr in list(scene.objects):
-    if cr.type!="CURVE" or cr.hide_render:continue
+# Optional stage build for 0.9.7; default 0.9.6 output remains unchanged.
+if os.environ.get("NECROMANCER_096_BUILD_ONLY") != "1":
+    metadata={
+     "stage":"0.9.6 redesigned groom and tailored silhouette on unmodified adult CC0 body",
+     "source":stage["ref"]["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
+     "base_collection":"Body Male - Realistic",
+     "body_vertices":len(body.data.vertices),
+     "body_faces":len(body.data.polygons),
+     "body_coordinate_sha256_before":face_hash_before,
+     "body_coordinate_sha256_after":face_hash_after,
+     "source_eye_mesh_hashes_unchanged":eye_hashes_before==eye_hashes_after,
+     "tailored_trouser_quad_faces":len(pants.data.polygons),
+     "tailored_trouser_vertices":adjusted,
+     "separated_fiber_groom_groups":[o.name for o in hair_objects],
+     "hair_fiber_strands":all_fibers,
+     "hair_fiber_root_min_z":round(min(root_z),5),
+     "hair_fiber_root_max_z":round(max(root_z),5),
+     "hair_group_count":len(hair_objects),
+     "original_scalp_quads":len(scalp.data.polygons),
+     "separate_cuff_stitch_curves":len(stitch_objects),
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"Fibre grooms and trousers are automated prototypes, not hand-authored final character art. Approved reference is not in repository. FBX is unrigged."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    
+    # Studio camera and lights exclusively for genuine Blender geometry reviews.
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=24
+    scene.cycles.use_denoising=True
+    scene.render.image_settings.file_format="PNG"
+    scene.render.resolution_percentage=100
+    scene.render.film_transparent=False
+    world=bpy.data.worlds.new("096 | graphite neutral product studio")
+    world.use_nodes=True
+    world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.135,.138,.16,1)
+    world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.7
+    scene.world=world
+    for name,pos,power,size in (
+     ("096 | Key",(2.2,-3.5,4.3),630,4.2),
+     ("096 | Fill",(-2.7,-1.4,2.7),300,3.5),
+     ("096 | Rim",(-1.2,2.6,3.2),480,3.0),
+    ):
+        l=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,l)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        l.energy=power
+        l.shape="DISK"
+        l.size=size
+    
+    camdata=bpy.data.cameras.new("096 | true orthographic inspection")
+    cam=bpy.data.objects.new("096 | true orthographic inspection",camdata)
+    scene.collection.objects.link(cam)
+    scene.camera=cam
+    camdata.type="ORTHO"
+    
+    # Save .blend with original editable curves prior to FBX conversion.
     bpy.ops.object.select_all(action="DESELECT")
-    cr.hide_set(False)
-    cr.select_set(True)
-    bpy.context.view_layer.objects.active=cr
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for ob in list(scene.objects):
-    if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("095 | stylized"):
-        ob.hide_set(False)
-        ob.select_set(True)
-assert len(bpy.context.selected_objects)>16
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_realistic_096.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def shot(name,location,target,scale,reso=(620,840)):
-    scene.render.resolution_x,scene.render.resolution_y=reso
-    camdata.ortho_scale=scale
-    cam.location=location
-    cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_096",name,scene.render.filepath,flush=True)
-
-for name,pos in (
-    ("front",(0,-4.6,1.24)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3.0,-4.0,1.30)),
-):
-    shot(name,pos,(0,0,1),2.27)
-shot("face_front",(0,-2.8,1.78),(0,0,1.75),.52,(760,760))
-shot("face_threequarter",(2.0,-2.8,1.82),(0,0,1.75),.52,(760,760))
-shot("hair_back_detail",(0,2.5,1.84),(0,0,1.84),.53,(760,760))
-shot("trousers_detail",(1.1,-3.0,.72),(0,0,.58),1.18,(760,760))
-print("SUCCESS_096",json.dumps(metadata),flush=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_096.blend"))
+    for cr in list(scene.objects):
+        if cr.type!="CURVE" or cr.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
+        cr.hide_set(False)
+        cr.select_set(True)
+        bpy.context.view_layer.objects.active=cr
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in list(scene.objects):
+        if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("095 | stylized"):
+            ob.hide_set(False)
+            ob.select_set(True)
+    assert len(bpy.context.selected_objects)>16
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_realistic_096.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def shot(name,location,target,scale,reso=(620,840)):
+        scene.render.resolution_x,scene.render.resolution_y=reso
+        camdata.ortho_scale=scale
+        cam.location=location
+        cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_096",name,scene.render.filepath,flush=True)
+    
+    for name,pos in (
+        ("front",(0,-4.6,1.24)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3.0,-4.0,1.30)),
+    ):
+        shot(name,pos,(0,0,1),2.27)
+    shot("face_front",(0,-2.8,1.78),(0,0,1.75),.52,(760,760))
+    shot("face_threequarter",(2.0,-2.8,1.82),(0,0,1.75),.52,(760,760))
+    shot("hair_back_detail",(0,2.5,1.84),(0,0,1.84),.53,(760,760))
+    shot("trousers_detail",(1.1,-3.0,.72),(0,0,.58),1.18,(760,760))
+    print("SUCCESS_096",json.dumps(metadata),flush=True)
+    
