@@ -68,8 +68,8 @@ microtexture(cloth,46,.004,.24)
 trousers.data.materials.clear()
 trousers.data.materials.append(cloth)
 root_mat=mat("093 | understated dark roots",(.20,.19,.24),.86)
-smoke=mat("093 | silver-ash strands",(.38,.38,.46),.74)
-lilac=mat("093 | cool lilac accents",(.32,.29,.39),.79)
+smoke=mat("093 | silver-ash strands",(.32,.32,.39),.81)
+lilac=mat("093 | cool lilac accents",(.29,.265,.36),.82)
 shadow=mat("093 | muted graphite hair",(.23,.22,.29),.80)
 upperlid=mat("093 | graphite eyelashes",(.15,.13,.16),.89)
 iris=mat("093 | desaturated slate irises",(.21,.26,.31),.55)
@@ -87,7 +87,7 @@ for vert in body.data.vertices:
     if 1.633<z<1.833 and a<.165:
         # Narrow the childish upper cheek/temples without a pinched jaw.
         p.x*=1-.050*gauss(z,1.755,.044)
-        p.x*=1+.063*gauss(z,1.672,.040)*smoother(.035,.105,a)
+        p.x*=1+.115*gauss(z,1.672,.040)*smoother(.035,.105,a)
         # Slightly square the lower jaw and project the chin.
         p.y-=.0065*gauss(z,1.654,.033)*gauss(a,0,.080)
         # Sharper nose bridge and subdued nasolabial/cheek transitions.
@@ -96,7 +96,11 @@ for vert in body.data.vertices:
             p.y-=.004*gauss(z,1.745,.035)*gauss(a,.074,.028)
             p.y+=.002*gauss(z,1.696,.014)*gauss(a,.052,.033)
         if a>.097 and z<1.805:
-            p.x-=math.copysign(.011*gauss(z,1.738,.058)*smoother(.097,.139,a),x)
+            p.x-=math.copysign(.023*gauss(z,1.738,.058)*smoother(.097,.139,a),x)
+        # Restrict the large stylized eyelid openings with smooth vertex edits.
+        if y<-.065 and .019<a<.094 and 1.680<z<1.771:
+            socket=gauss(a,.055,.039)*gauss(z,1.725,.039)*smoother(.045,.115,-y)
+            p.z=1.725+(p.z-1.725)*(1-.19*socket)
     if 1.32<z<1.55:
         # Raise the centre of the pectoral mass and strengthen deltoids.
         if y<-.02 and a<.27:
@@ -117,8 +121,8 @@ for ob in base["selected_objects"]:
         centre=sum(pts,Vector())/len(pts)
         for v in ob.data.vertices:
             p=ob.matrix_world@v.co
-            p.x=centre.x+(p.x-centre.x)*.87
-            p.z=centre.z+(p.z-centre.z)*.77
+            p.x=centre.x+(p.x-centre.x)*.80
+            p.z=centre.z+(p.z-centre.z)*.69
             p.y=centre.y+(p.y-centre.y)*.91+.006
             v.co=local@p
         ob.data.materials.clear()
@@ -144,8 +148,8 @@ for ob in bpy.context.scene.objects:
     ob.data.materials.append(mat_target)
     for v in ob.data.vertices:
         p=ob.matrix_world@v.co
-        p.x=centre.x+(p.x-centre.x)*.85
-        p.z=centre.z+(p.z-centre.z)*.85
+        p.x=centre.x+(p.x-centre.x)*.78
+        p.z=centre.z+(p.z-centre.z)*.75
         p.y=new_front.y-(.0052 if is_pupil else .0035)
         v.co=ob.matrix_world.inverted_safe()@p
     ob.data.update()
@@ -159,7 +163,9 @@ def projected_line(name,coords,material,width=.0018,front_mesh=False):
     curve.bevel_resolution=2
     line=curve.splines.new("POLY")
     line.points.add(len(coords)-1)
-    for point,(x,z) in zip(line.points,coords):
+    for idx,(point,(x,z)) in enumerate(zip(line.points,coords)):
+        t=idx/max(1,len(coords)-1)
+        point.radius=.36+.64*math.sin(math.pi*t)
         if front_mesh:
             hit=stage["front_hit"](x,z)
         else:
@@ -186,7 +192,7 @@ for side,side_name in ((-1,"L"),(1,"R")):
     for i in range(15):
         t=i/14
         brow.append((side*(.026+.060*t),1.776+.0044*math.sin(math.pi*t)-.005*t))
-    projected_line("093 | "+side_name+" ash eyebrow",brow,shadow,.0024)
+    projected_line("093 | "+side_name+" ash eyebrow",brow,shadow,.0019)
     eyelid_lines+=1
 
 # --- GARMENT TAILORING ---
@@ -247,7 +253,25 @@ for v in trousers.data.vertices:
     v.co=trousers.matrix_world.inverted_safe()@p
     tailored+=1
 trousers.data.update()
-print("TAILORED_CLOTH_VERTICES",tailored,"slices",len(cache),flush=True)
+# Horizontal-only Laplacian relaxation: remove residual source kneecap and
+# calf lumps without changing vertex count, garment seams or height.
+adj=[set() for _ in trousers.data.vertices]
+for e in trousers.data.edges:
+    a,b=e.vertices
+    adj[a].add(b);adj[b].add(a)
+for iteration in range(9):
+    original_coords=[v.co.copy() for v in trousers.data.vertices]
+    for idx,v in enumerate(trousers.data.vertices):
+        z=original_coords[idx].z
+        if z<.205 or z>.88 or len(adj[idx])<3:
+            continue
+        mean=sum((original_coords[k] for k in adj[idx]),Vector())/len(adj[idx])
+        weight=.44*gauss(z,.56,.38)
+        # x/y smoothing only; all z positions and cuffs remain unchanged.
+        v.co.x=original_coords[idx].x*(1-weight)+mean.x*weight
+        v.co.y=original_coords[idx].y*(1-weight)+mean.y*weight
+trousers.data.update()
+print("TAILORED_CLOTH_VERTICES",tailored,"slices",len(cache),"relaxation",9,flush=True)
 if tailored<900:raise RuntimeError("Unexpectedly few cloth vertices tailored")
 
 # Replace bright V/arrows with sparse stitched outer seam and hems, following
