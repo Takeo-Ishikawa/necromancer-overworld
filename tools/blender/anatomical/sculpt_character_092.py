@@ -402,101 +402,104 @@ for sign,label in ((-1,"L"),(1,"R")):
 for ob in base["selected_objects"]:
     if ob.type!="MESH":ob.hide_render=True
 
-# Honest topology, source and outfit metadata, checked by CI.
-metadata={
-  "stage":"0.9.2 - silhouette, initial facial landmarks and distinct editable clothing/hair",
-  "source":base["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
-  "asset_file":source_entry["file"],"asset_datablock":source_name,
-  "blender_version":bpy.app.version_string,
-  "base_vertices":original_vertex_count,"base_faces":original_face_count,
-  "body_vertices_after_sculpt":len(body.data.vertices),
-  "body_faces_after_sculpt":len(body.data.polygons),
-  "anatomy_method":"proportional deformation of original Blender Studio vertices/quads",
-  "hair_cards":len(hair_f),"hair_strand_count":115+33+2*24,
-  "trouser_quads":len(trousers.data.polygons),
-  "bracer_quads":sum(len(b.data.polygons) for b in bracers),
-  "scalp_quads":len(scalp.data.polygons),
-  "embroidered_curve_count":strokes,
-  "rigged":False,"unity_character_replaced":False,
-  "known_limitations":"Identity/ref face still needs side-by-side review against approved concept; no hand sculpt, UV authoring, retopology, rigging or animation. Hair/cards and tailoring are provisional."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-(OUT/"asset_catalog.json").write_text(json.dumps(base["entries"],indent=2),encoding="utf-8")
-
-# Set up genuine multi-view lighting BEFORE saving .blend (editable cameras).
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=20
-scene.cycles.use_denoising=True
-scene.render.resolution_x=620
-scene.render.resolution_y=840
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-scene.render.film_transparent=False
-world=bpy.data.worlds.new("092 | neutral dark studio")
-world.use_nodes=True
-bg=world.node_tree.nodes.get("Background")
-bg.inputs["Color"].default_value=(.14,.14,.17,1)
-bg.inputs["Strength"].default_value=.75
-scene.world=world
-for name,pos,power,size in (
-  ("Key",(2.4,-3,4.3),680,4.2),
-  ("Fill",(-3,-1.5,2.5),350,3.3),
-  ("Rim",(-1.3,2.4,3.3),570,3.0),
-):
-    ld=bpy.data.lights.new(name,"AREA")
-    lo=bpy.data.objects.new(name,ld)
-    scene.collection.objects.link(lo)
-    lo.location=pos
-    ld.energy=power
-    ld.shape="DISK"
-    ld.size=size
-camdata=bpy.data.cameras.new("092 | inspection orthographic lens")
-cam=bpy.data.objects.new("092 | inspection orthographic lens",camdata)
-scene.collection.objects.link(cam)
-scene.camera=cam
-camdata.type="ORTHO"
-camdata.ortho_scale=2.23
-
-# Save both editable Blender and FBX; no active Unity character changed.
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_character_092.blend"))
-# Convert curves only in FBX scene: editable versions are already in .blend.
-for curve_obj in [o for o in bpy.context.scene.objects if o.type=="CURVE" and not o.hide_render]:
+# Importable source stage for 0.9.3. Default behavior still renders 0.9.2.
+if os.environ.get("NECROMANCER_092_BUILD_ONLY") != "1":
+    # Honest topology, source and outfit metadata, checked by CI.
+    metadata={
+      "stage":"0.9.2 - silhouette, initial facial landmarks and distinct editable clothing/hair",
+      "source":base["SOURCE"],"license":"CC0-1.0","bundle_version":"1.4.1",
+      "asset_file":source_entry["file"],"asset_datablock":source_name,
+      "blender_version":bpy.app.version_string,
+      "base_vertices":original_vertex_count,"base_faces":original_face_count,
+      "body_vertices_after_sculpt":len(body.data.vertices),
+      "body_faces_after_sculpt":len(body.data.polygons),
+      "anatomy_method":"proportional deformation of original Blender Studio vertices/quads",
+      "hair_cards":len(hair_f),"hair_strand_count":115+33+2*24,
+      "trouser_quads":len(trousers.data.polygons),
+      "bracer_quads":sum(len(b.data.polygons) for b in bracers),
+      "scalp_quads":len(scalp.data.polygons),
+      "embroidered_curve_count":strokes,
+      "rigged":False,"unity_character_replaced":False,
+      "known_limitations":"Identity/ref face still needs side-by-side review against approved concept; no hand sculpt, UV authoring, retopology, rigging or animation. Hair/cards and tailoring are provisional."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    (OUT/"asset_catalog.json").write_text(json.dumps(base["entries"],indent=2),encoding="utf-8")
+    
+    # Set up genuine multi-view lighting BEFORE saving .blend (editable cameras).
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=20
+    scene.cycles.use_denoising=True
+    scene.render.resolution_x=620
+    scene.render.resolution_y=840
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    scene.render.film_transparent=False
+    world=bpy.data.worlds.new("092 | neutral dark studio")
+    world.use_nodes=True
+    bg=world.node_tree.nodes.get("Background")
+    bg.inputs["Color"].default_value=(.14,.14,.17,1)
+    bg.inputs["Strength"].default_value=.75
+    scene.world=world
+    for name,pos,power,size in (
+      ("Key",(2.4,-3,4.3),680,4.2),
+      ("Fill",(-3,-1.5,2.5),350,3.3),
+      ("Rim",(-1.3,2.4,3.3),570,3.0),
+    ):
+        ld=bpy.data.lights.new(name,"AREA")
+        lo=bpy.data.objects.new(name,ld)
+        scene.collection.objects.link(lo)
+        lo.location=pos
+        ld.energy=power
+        ld.shape="DISK"
+        ld.size=size
+    camdata=bpy.data.cameras.new("092 | inspection orthographic lens")
+    cam=bpy.data.objects.new("092 | inspection orthographic lens",camdata)
+    scene.collection.objects.link(cam)
+    scene.camera=cam
+    camdata.type="ORTHO"
+    camdata.ortho_scale=2.23
+    
+    # Save both editable Blender and FBX; no active Unity character changed.
     bpy.ops.object.select_all(action="DESELECT")
-    curve_obj.hide_set(False)
-    curve_obj.select_set(True)
-    bpy.context.view_layer.objects.active=curve_obj
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for o in bpy.context.scene.objects:
-    if o.type=="MESH" and not o.hide_render and not o.name.startswith("SOURCE"):
-        o.hide_set(False)
-        o.select_set(True)
-if len(bpy.context.selected_objects)<8:
-    raise RuntimeError("0.9.2 FBX export has unexpectedly few components")
-bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_character_092.fbx"),
-       use_selection=True,object_types={"MESH"},apply_unit_scale=True,
-       axis_forward="-Z",axis_up="Y",bake_space_transform=False)
-
-def shot(name,location,target,scale,res_x=620,res_y=840):
-    scene.render.resolution_x=res_x
-    scene.render.resolution_y=res_y
-    camdata.ortho_scale=scale
-    cam.location=location
-    cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("character_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_092",name,scene.render.filepath,flush=True)
-
-for name,loc in (
-    ("front",(0,-4.6,1.25)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3.0,-4.0,1.30)),
-):
-    shot(name,loc,(0,0,1.0),2.23)
-shot("face_front",(0,-2.6,1.77),(0,0,1.75),.49,760,760)
-shot("face_threequarter",(1.5,-2.3,1.8),(0,0,1.75),.50,760,760)
-print("SUCCESS 0.9.2",json.dumps(metadata),flush=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_character_092.blend"))
+    # Convert curves only in FBX scene: editable versions are already in .blend.
+    for curve_obj in [o for o in bpy.context.scene.objects if o.type=="CURVE" and not o.hide_render]:
+        bpy.ops.object.select_all(action="DESELECT")
+        curve_obj.hide_set(False)
+        curve_obj.select_set(True)
+        bpy.context.view_layer.objects.active=curve_obj
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in bpy.context.scene.objects:
+        if o.type=="MESH" and not o.hide_render and not o.name.startswith("SOURCE"):
+            o.hide_set(False)
+            o.select_set(True)
+    if len(bpy.context.selected_objects)<8:
+        raise RuntimeError("0.9.2 FBX export has unexpectedly few components")
+    bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_character_092.fbx"),
+           use_selection=True,object_types={"MESH"},apply_unit_scale=True,
+           axis_forward="-Z",axis_up="Y",bake_space_transform=False)
+    
+    def shot(name,location,target,scale,res_x=620,res_y=840):
+        scene.render.resolution_x=res_x
+        scene.render.resolution_y=res_y
+        camdata.ortho_scale=scale
+        cam.location=location
+        cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("character_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_092",name,scene.render.filepath,flush=True)
+    
+    for name,loc in (
+        ("front",(0,-4.6,1.25)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3.0,-4.0,1.30)),
+    ):
+        shot(name,loc,(0,0,1.0),2.23)
+    shot("face_front",(0,-2.6,1.77),(0,0,1.75),.49,760,760)
+    shot("face_threequarter",(1.5,-2.3,1.8),(0,0,1.75),.50,760,760)
+    print("SUCCESS 0.9.2",json.dumps(metadata),flush=True)
+    

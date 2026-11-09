@@ -1,4 +1,4 @@
-name: Necromancer 0.9.2 CC0 Sculpt and Styling
+name: Necromancer 0.9.3 CC0 Sculpt and Styling
 
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ jobs:
       - name: Sculpt official male topology, tailor accessories and render
         run: |
           /opt/blender-4.5.15/blender --version
-          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/anatomical/sculpt_character_092.py
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/anatomical/sculpt_character_093.py
 
       - name: Validate source and generated assets
         run: |
@@ -66,12 +66,17 @@ jobs:
           assert meta["bracer_quads"]>80
           assert meta["scalp_quads"]>50
           assert meta["embroidered_curve_count"]>=4
+          assert meta["tailored_cloth_vertices"]>=900
+          assert meta["hair_strand_count"]>=400
+          assert meta["eyebrow_eyelid_curves"]==4
+          assert len(meta["source_eye_objects"])==2
           assert meta["rigged"] is False and meta["unity_character_replaced"] is False
           for filename in (
-            "necromancer_character_092.blend","necromancer_character_092.fbx",
+            "necromancer_character_093.blend","necromancer_character_093.fbx",
             "character_front.png","character_side.png","character_back.png",
             "character_threequarter.png","character_face_front.png",
-            "character_face_threequarter.png","asset_catalog.json"
+            "character_face_threequarter.png","character_trousers_detail.png",
+            "asset_catalog.json"
           ):
             f=p/filename
             assert f.exists() and f.stat().st_size>0,filename
@@ -79,10 +84,10 @@ jobs:
                 "vertices:",meta["base_vertices"],"faces:",meta["base_faces"])
           PY
 
-      - name: Upload anatomical 0.9.2 Blender/FBX and six real views
+      - name: Upload anatomical 0.9.3 Blender/FBX and seven real views
         uses: actions/upload-artifact@v4
         with:
-          name: necromancer-anatomical-0-9-2-cc0-preview
+          name: necromancer-anatomical-0-9-3-cc0-preview
           path: |
             tools/blender/anatomical/output/*.blend
             tools/blender/anatomical/output/*.fbx
