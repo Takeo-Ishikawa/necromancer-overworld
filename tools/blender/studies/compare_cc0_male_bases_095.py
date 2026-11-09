@@ -123,78 +123,82 @@ def set_variant(name):
             if ob.type=="MESH":
                 ob.hide_render=(key!=name)
 
-world=bpy.data.worlds.new("095 | neutral comparison world")
-world.use_nodes=True
-bg=world.node_tree.nodes.get("Background")
-bg.inputs["Color"].default_value=(.18,.18,.20,1)
-bg.inputs["Strength"].default_value=.55
-scene.world=world
-for name,pos,power,size in (
-    ("095 | key",(2.1,-3.2,3.8),680,3.5),
-    ("095 | fill",(-2.4,-1.0,2.8),330,3.4),
-    ("095 | rim",(-1.4,2.5,3.1),460,3.1),
-):
-    lamp=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,lamp)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    lamp.energy=power
-    lamp.shape="DISK"
-    lamp.size=size
-
-camdata=bpy.data.cameras.new("095 | standardized orthographic inspection")
-cam=bpy.data.objects.new("095 | standardized orthographic inspection",camdata)
-scene.collection.objects.link(cam)
-scene.camera=cam
-camdata.type="ORTHO"
-
-def shot(variant,name,where,target,scale,res):
-    set_variant(variant)
-    scene.render.resolution_x,scene.render.resolution_y=res
-    camdata.ortho_scale=scale
-    cam.location=where
-    cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
-    filename=OUT/(variant+"_"+name+".png")
-    scene.render.filepath=str(filename)
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_CC0",variant,name,filename,flush=True)
-
-for variant in ("stylized","realistic"):
-    shot(variant,"front",(0,-4.4,1.20),(0,0,1.0),2.26,(620,840))
-    shot(variant,"face_front",(0,-2.9,1.77),(0,0,1.76),.53,(760,760))
-    shot(variant,"face_profile",(3.2,0,1.78),(0,0,1.75),.54,(760,760))
-    shot(variant,"face_threequarter",(2.0,-2.7,1.81),(0,0,1.75),.54,(760,760))
-
-metadata={
-    "stage":"0.9.5 controlled comparison: unmodified official adult-realistic vs stylized CC0 source",
-    "source":SOURCE,
-    "license":"CC0-1.0",
-    "bundle_version":"1.4.1",
-    "topology_identical_loop_order":compatible,
-    "caution":"Matching polygon counts alone never proves morph compatibility; do not transfer 0.9.4 sculpt offsets blindly.",
-    "variants":{
-        key:{k:v for k,v in item.items() if k in ("name","source_height","scale","n_vertices","n_faces","face_vertices","head_width_m","eyes")}
-        for key,item in variants.items()
-    },
-    "preview_images":8,
-    "unity_character_replaced":False,
-    "rigged":False,
-    "recommendation":"Decide only after inspecting real rendered profiles and face; current comparison is a diagnostic not an approved replacement."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-# Save both editable source collections, non-destruction, only the realistic
-# variant visible by default; can toggle stylized visibility in .blend.
-set_variant("realistic")
-scene.render.filepath=""
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"official_CC0_male_face_comparison_095.blend"))
-# Separate CC0 realistic FBX is a candidate for study, NOT a Unity replacement.
-bpy.ops.object.select_all(action="DESELECT")
-for o in variants["realistic"]["objects"]:
-    if o.type=="MESH":
-        o.hide_set(False)
-        o.select_set(True)
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"official_realistic_male_CC0_candidate_095.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-print("FINISHED_OFFICIAL_CC0_COMPARISON",json.dumps(metadata),flush=True)
+# Reusable import-only stage for the independent realistic-character prototype.
+import os
+if os.environ.get("NECROMANCER_095_LOAD_ONLY") != "1":
+    world=bpy.data.worlds.new("095 | neutral comparison world")
+    world.use_nodes=True
+    bg=world.node_tree.nodes.get("Background")
+    bg.inputs["Color"].default_value=(.18,.18,.20,1)
+    bg.inputs["Strength"].default_value=.55
+    scene.world=world
+    for name,pos,power,size in (
+        ("095 | key",(2.1,-3.2,3.8),680,3.5),
+        ("095 | fill",(-2.4,-1.0,2.8),330,3.4),
+        ("095 | rim",(-1.4,2.5,3.1),460,3.1),
+    ):
+        lamp=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,lamp)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        lamp.energy=power
+        lamp.shape="DISK"
+        lamp.size=size
+    
+    camdata=bpy.data.cameras.new("095 | standardized orthographic inspection")
+    cam=bpy.data.objects.new("095 | standardized orthographic inspection",camdata)
+    scene.collection.objects.link(cam)
+    scene.camera=cam
+    camdata.type="ORTHO"
+    
+    def shot(variant,name,where,target,scale,res):
+        set_variant(variant)
+        scene.render.resolution_x,scene.render.resolution_y=res
+        camdata.ortho_scale=scale
+        cam.location=where
+        cam.rotation_euler=(Vector(target)-cam.location).to_track_quat("-Z","Y").to_euler()
+        filename=OUT/(variant+"_"+name+".png")
+        scene.render.filepath=str(filename)
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_CC0",variant,name,filename,flush=True)
+    
+    for variant in ("stylized","realistic"):
+        shot(variant,"front",(0,-4.4,1.20),(0,0,1.0),2.26,(620,840))
+        shot(variant,"face_front",(0,-2.9,1.77),(0,0,1.76),.53,(760,760))
+        shot(variant,"face_profile",(3.2,0,1.78),(0,0,1.75),.54,(760,760))
+        shot(variant,"face_threequarter",(2.0,-2.7,1.81),(0,0,1.75),.54,(760,760))
+    
+    metadata={
+        "stage":"0.9.5 controlled comparison: unmodified official adult-realistic vs stylized CC0 source",
+        "source":SOURCE,
+        "license":"CC0-1.0",
+        "bundle_version":"1.4.1",
+        "topology_identical_loop_order":compatible,
+        "caution":"Matching polygon counts alone never proves morph compatibility; do not transfer 0.9.4 sculpt offsets blindly.",
+        "variants":{
+            key:{k:v for k,v in item.items() if k in ("name","source_height","scale","n_vertices","n_faces","face_vertices","head_width_m","eyes")}
+            for key,item in variants.items()
+        },
+        "preview_images":8,
+        "unity_character_replaced":False,
+        "rigged":False,
+        "recommendation":"Decide only after inspecting real rendered profiles and face; current comparison is a diagnostic not an approved replacement."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    # Save both editable source collections, non-destruction, only the realistic
+    # variant visible by default; can toggle stylized visibility in .blend.
+    set_variant("realistic")
+    scene.render.filepath=""
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"official_CC0_male_face_comparison_095.blend"))
+    # Separate CC0 realistic FBX is a candidate for study, NOT a Unity replacement.
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in variants["realistic"]["objects"]:
+        if o.type=="MESH":
+            o.hide_set(False)
+            o.select_set(True)
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"official_realistic_male_CC0_candidate_095.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    print("FINISHED_OFFICIAL_CC0_COMPARISON",json.dumps(metadata),flush=True)
+    
