@@ -1,0 +1,95 @@
+name: Necromancer 0.9.8 One-Piece Cloth and Hair Inspection
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/realistic_hero_098/**'
+      - '.github/workflows/realistic-character-preview-098.yml'
+
+jobs:
+  adult-cloth-098:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Blender runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils libgl1 libxi6 libxrender1 libxkbcommon-x11-0 libsm6
+
+      - name: Official Blender Studio CC0 Human Base Meshes
+        run: |
+          mkdir -p tools/blender/anatomical/_source_bundle
+          curl -fL --retry 3 --retry-delay 4 --connect-timeout 30 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/human-base-meshes-v1.4.1.zip
+          unzip -t /tmp/human-base-meshes-v1.4.1.zip | tail -n 2
+          unzip -q /tmp/human-base-meshes-v1.4.1.zip -d tools/blender/anatomical/_source_bundle
+
+      - name: Cache Blender 4.5.15 LTS
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/blender-4.5.15
+          key: official-blender-linux-x64-v4.5.15
+
+      - name: Install Blender if cache absent
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 --connect-timeout 30 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.15-linux-x64.tar.xz
+          mkdir -p /opt/blender-4.5.15
+          tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
+
+      - name: Generate separate continuous quad garment and inspect
+        run: |
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/realistic_hero_098/assemble_realistic_hero_098.py
+
+      - name: Validate genuine CC0 anatomy and one-piece cloth
+        run: |
+          python3 - <<'PY'
+          import pathlib,json
+          p=pathlib.Path('tools/blender/realistic_hero_098/output')
+          m=json.loads((p/'source_metadata.json').read_text(encoding='utf-8'))
+          assert m['license']=='CC0-1.0'
+          assert m['base_collection']=='Body Male - Realistic'
+          assert m['bundle_version']=='1.4.1'
+          assert (m['body_vertices'],m['body_faces'])==(10582,10590)
+          assert m['body_coordinate_sha256_before']==m['body_coordinate_sha256_after']
+          assert m['source_eye_hashes_unchanged'] is True
+          assert m['garment_quad_faces']>900
+          assert m['garment_vertices']>1000
+          assert m['garment_connected_components']==1
+          assert m['garment_vertices_modified']>=400
+          assert len(m['garment_shape_key_names'])==2
+          assert len(m['garment_uv_layers'])>=1
+          assert m['separate_seam_curves']==2
+          assert m['hidden_rejected_experimental_components']>=8
+          assert m['original_short_fibers']==1760
+          assert m['base_swept_fiber_count']==180
+          assert m['rigged'] is False and m['unity_character_replaced'] is False
+          for fname in (
+            'necromancer_realistic_098.blend','necromancer_realistic_098.fbx',
+            'hero_front.png','hero_side.png','hero_back.png','hero_threequarter.png',
+            'hero_face_threequarter.png','hero_trousers_front.png',
+            'hero_trousers_side.png','hero_hair_back.png'
+          ):
+            f=p/fname
+            assert f.exists() and f.stat().st_size>10000,fname
+          print('PASS: authentic 0.9.8 cloth connected, adult CC0 anatomy unchanged, editable assets exported')
+          PY
+
+      - name: Upload editable Blender, FBX and eight genuine previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-realistic-0-9-8-continuous-textile
+          path: |
+            tools/blender/realistic_hero_098/output/*.blend
+            tools/blender/realistic_hero_098/output/*.fbx
+            tools/blender/realistic_hero_098/output/*.png
+            tools/blender/realistic_hero_098/output/*.json
+          retention-days: 14
+          if-no-files-found: error
