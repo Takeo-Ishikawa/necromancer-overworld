@@ -1,24 +1,50 @@
-# Necromancer Overworld — versão 0.9.6 | Corte tridimensional e alfaiataria
+# Necromancer Overworld — 0.9.6 | Groom de fibras e calças ajustadas
 
-## Escopo e base
+## Decisão de continuidade
 
-Esta versão continua a partir da anatomia adulta original `Body Male - Realistic` do Blender Studio Human Base Meshes v1.4.1 (CC0). O script `tools/blender/realistic_hero_095/assemble_realistic_hero_095.py` pode ser chamado com `NECROMANCER_095_ASSEMBLY_ONLY=1` para preservar o estágio sem exportações redundantes. A nova implementação fica isolada em `tools/blender/realistic_hero_096/assemble_realistic_hero_096.py`.
+A base **Body Male – Realistic** do Blender Studio Human Base Meshes v1.4.1 (CC0) continua sendo a fonte anatômica aprovada tecnicamente. A anatomia adulta foi mantida integralmente: **10.582 vértices / 10.590 faces**.
 
-**Atenção:** A cabeça, o rosto, o corpo e os dois olhos importados da versão realista não são esculpidos novamente. O novo script calcula SHA-256 das coordenadas (double float) de todos os 10.582 vértices do corpo e dos dois olhos antes e depois da edição. O workflow falha se qualquer posição mudar. A topologia do corpo contém 10.590 faces e permanece igual.
+O script `tools/blender/realistic_hero_095/assemble_realistic_hero_095.py` tem modo de importação `NECROMANCER_095_ASSEMBLY_ONLY=1`, preservando a montagem anterior e evitando geração duplicada. A versão nova está em `tools/blender/realistic_hero_096/assemble_realistic_hero_096.py`.
 
-## Mudanças reais no modelo
+A **integridade das coordenadas do corpo e dos dois olhos é verificada** por SHA-256 das coordenadas em double float antes/depois do processo: o hash do corpo é exatamente igual (`38989292ed2dd123c31b8135f2adc18c3202399de1683b74f8bd8cddf9d85e4d`). Nenhuma deformação facial, rigging, animação ou alteração de `unity/`.
 
-1. **Cabelo:** as antigas fitas achatadas da 0.9.5 são eliminadas. Novo conjunto de **103 mechas com seção transversal elíptica tridimensional**, agrupadas em coroa, franja, têmporas e nuca. Cada grupo é malha independente, com pontas afiladas e espessura real, além de pequenas curvas de fios discretos editáveis. As raízes são extraídas diretamente da malha scalp derivada da cabeça oficial, com verificação da altura mínima para evitar mechas no pescoço/costas. O resultado ainda é uma aproximação estilizada que exige inspeção.
-2. **Calças:** os polígonos da roupa continuam derivados do corpo original e são reajustados por seções de cada perna: redução da aparência arredondada dos joelhos, silhueta mais estreita nas panturrilhas e bainha com folga. A transformação respeita o envelope anatômico com margem para reduzir interseções. Acrescentadas duas curvas sutis de costura dourada nas bainhas.
-3. **Editabilidade:** cabelos, underlay, calças e costuras em coleções Blender independentes; bordados e fios continuam curvas no `.blend` e são convertidos temporariamente para malhas na exportação FBX.
-4. **Segurança:** nenhuma mudança em `unity/`, nenhum rigging ou animação e nenhum novo rosto. A referência visual aprovada ainda não está versionada no repositório.
+## Mudanças implementadas
 
-## CI e verificações
+### 1. Calças
 
-- Workflow independente: `.github/workflows/realistic-character-preview-096.yml` — Blender 4.5.15 LTS no GitHub Actions.
-- Saída: `necromancer_realistic_096.blend`, `necromancer_realistic_096.fbx`, metadados e **oito renders reais**: frente, lado, costas, três-quartos, rosto frontal, rosto três-quartos, detalhe do cabelo traseiro e detalhe da calça.
-- O sucesso do CI prova apenas que geometrias, exportações e invariantes foram produzidos. A qualidade artística deve ser julgada pelas imagens reais e confrontada com o conceito quando disponível.
+- Preservada a casca de **1.086 quads** originalmente extraída da malha realista CC0 e mantida como objeto editável.
+- **917 vértices da roupa** modificados com redução lateral conservadora, discreto alisamento de joelhos/panturrilhas e transição gradual até o quadril.
+- Duas costuras de bainha em curvas Blender editáveis, convertidas somente no estágio de exportação FBX.
+- Foi criada uma checagem geométrica para impedir que a região das coxas se expanda além da silhueta original, após um primeiro teste falhar artisticamente.
 
-## Execução e parecer visual
+### 2. Cabelo
 
-Pendente de registro após execução e inspeção dos PNGs. O PR permanece em rascunho e o protagonista de Unity não é substituído.
+- A primeira tentativa de 0.9.6 criou 103 mechas volumétricas afiladas; embora tecnicamente correta, **ficou pior visualmente**: pareciam pontas pregadas sobre um capacete liso. Ela foi descartada na renderização final, mas permanece no histórico Git para comparação.
+- Foi substituída por **1.760 fibras afiladas em curvas reais do Blender**, distribuídas em quatro grupos editáveis: coroa (820), franja (290), têmporas (310) e nuca (340).
+- As raízes são amostradas diretamente dos triângulos temporários de polígonos do scalp extraído da cabeça oficial. Para cada ponto da fibra, o traçado é reprojetado à superfície real por `closest_point_on_mesh` e sofre um deslocamento mínimo para não atravessar a pele.
+- A malha original do scalp, com **346 quads**, permanece editável. Seu material foi texturizado com linhas para reduzir a aparência lisa.
+- A altura mínima das raízes é **1,76708 m**, impedindo mechas sobre o pescoço/costas.
+
+## GitHub Actions e evidências reais
+
+Workflow: `.github/workflows/realistic-character-preview-096.yml` — Blender 4.5.15 LTS.
+
+| Execução | Resultado técnico | Inspeção artística |
+|---|---|---|
+| [42555378136](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42555378136) | Sucesso | **Reprovado:** coxas triangulares e mechas rígidas |
+| [42555795396](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42555795396) | Sucesso | Coxas corrigidas; cabelo ainda como pregos/placas |
+| [42556515204](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42556515204) | **Sucesso** | Nuca muito mais convincente com fibras, sem regressão visível das calças |
+
+Artefato final: **`necromancer-realistic-0-9-6-cc0-groom-tailoring`**, ID **13646958724**, tamanho ZIP ~50,7 MB. Contém `necromancer_realistic_096.blend`, `necromancer_realistic_096.fbx`, oito renders PNG e `source_metadata.json`:
+
+- Corpo inteiro: frente, lateral, costas e três-quartos;
+- Rosto: frontal e três-quartos;
+- Detalhes: cabelo na nuca e calças.
+
+## Inspeção visual: o que melhorou e o que falta
+
+A inspeção real confirmou que as calças não apresentam mais os volumes triangulares gerados no primeiro teste. A nova nuca deixou de parecer um capacete com espinhos e agora mostra fios curtos com direção coerente sobre a superfície da cabeça.
+
+**Ainda não aprovada artisticamente:** o cabelo ficou curto e uniforme demais na região frontal (efeito de corte raspado), enquanto o conceito original pedia cabelo curto, mas em camadas. As calças estão menos infladas, porém ainda parecem uma roupa extremamente ajustada à anatomia, com marcação exagerada na região pélvica e poucas pregas. Braçadeiras e bolsas continuam blocadas/provisórias. Falta conferir a fidelidade exata contra a folha de referência original, não versionada no GitHub.
+
+**Próxima prioridade (0.9.7):** construir volumes de cabelo superiores em mechas agrupadas **sem reintroduzir pontas rígidas**, criar calças com modelagem de tecido própria em vez de apenas adaptar a casca do corpo, e revisar as braçadeiras e bolsas. Não substituir o personagem atual de Unity até aprovação.
