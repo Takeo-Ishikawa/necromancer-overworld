@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'tools/blender/**'
+      - 'tools/blender/*.py'
       - '.github/workflows/character-model-preview.yml'
 
 jobs:
