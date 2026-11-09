@@ -132,7 +132,7 @@ headpoints=[p.copy() for p in pworld if abs(p.x)<.14 and p.z>1.79]
 crown=[p for p in headpoints if p.z>1.855]
 fringe=[p for p in headpoints if p.z>1.83 and p.y<-.023]
 side=[p for p in headpoints if abs(p.x)>.055 and p.z>1.805]
-nape=[p for p in pworld if p.y>.045 and .775<p.z<1.86 and abs(p.x)<.13]
+nape=[p for p in pworld if p.y>.045 and 1.775<p.z<1.86 and abs(p.x)<.13]
 if min(len(crown),len(fringe),len(side),len(nape))<20:
     raise RuntimeError("Realistic scalp sampling missing: "+repr((len(crown),len(fringe),len(side))))
 hverts=[];hfaces=[];mi=[];hair_count=0
