@@ -94,14 +94,14 @@ def pant_drape(p,n):
 pants=shell("095 | separate dark trousers",
      lambda c,pts:.155<c.z<1.055 and abs(c.x)<.325 and
                  all(abs(q.x)<.36 for q in pts),
-     cloth,.028,pant_drape,minimum=1800)
+     cloth,.028,pant_drape,minimum=800)
 
 bracers=[]
 for sign,label in ((-1,"left"),(1,"right")):
     b=shell("095 | "+label+" dark leather forearm guard",
        lambda c,pts,sgn=sign: .93<c.z<1.215 and sgn*c.x>.335 and
          all(sgn*p.x>.32 for p in pts),
-       leather,.012,minimum=150)
+       leather,.012,minimum=40)
     bracers.append(b)
 
 def cap_mask(c,pts):
