@@ -53,8 +53,8 @@ def material(name,rgb,rough=.82,metal=0):
 cloth=material("097 | dense black-plum woven trousers",(.064,.057,.075),.91)
 hem_cloth=material("097 | charcoal folded cloth edging",(.050,.048,.064),.89)
 thread=material("097 | understated leather-coloured seam",(.21,.157,.123),.83)
-hair_main=material("097 | ash silvery upper layered hair",(.31,.31,.37),.83)
-hair_subtle=material("097 | muted lavender upper strands",(.29,.275,.35),.88)
+hair_main=material("097 | ash silvery upper layered hair",(.24,.24,.29),.89)
+hair_subtle=material("097 | muted lavender upper strands",(.225,.215,.28),.91)
 
 # -------- INDEPENDENT TROUSER CONSTRUCTION --------
 # The original generated 0.9.6 cloth shell remains editable but is hidden,
@@ -348,7 +348,7 @@ def grow(region,count,min_len,max_len):
     choices=rng.choices(collection,weights=[a[5] for a in collection],k=count)
     cr=bpy.data.curves.new("097 | "+region+" soft swept upper locks","CURVE")
     cr.dimensions="3D"
-    cr.bevel_depth=.00105 if region=="crown" else .00110
+    cr.bevel_depth=.00070 if region=="crown" else .00076
     cr.bevel_resolution=2
     cr.resolution_u=8
     cr.materials.append(hair_main)
@@ -380,7 +380,7 @@ def grow(region,count,min_len,max_len):
             surf,norm=scalp_project(predicted)
             # Rise near the crown and rejoin scalp at ends. The maximum
             # 8mm lift is intentionally below that of old spike clumps.
-            lift=.003+.0057*math.sin(math.pi*u)
+            lift=.0024+.0040*math.sin(math.pi*u)
             point=surf+norm*lift
             cp=spline.points[j]
             cp.co=(*point,1)
@@ -392,9 +392,9 @@ def grow(region,count,min_len,max_len):
     bpy.context.scene.collection.objects.link(ob)
     return ob
 
-hair_layers.append(grow("crown",170,.036,.060))
-hair_layers.append(grow("fringe",95,.026,.048))
-assert hair_count==265
+hair_layers.append(grow("crown",120,.032,.053))
+hair_layers.append(grow("fringe",60,.023,.039))
+assert hair_count==180
 
 # Organize pieces for editing without joining/sculpting the adult body.
 cloth_collection=bpy.data.collections.new("097 | independent sewn cloth tailoring")

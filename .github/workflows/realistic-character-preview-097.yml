@@ -71,7 +71,7 @@ jobs:
           assert m['independent_loft_experiment_hidden'] is True
           assert m['visible_seamless_garment']=='096-source-quads-with-097-woven-material'
           assert m['base_fibre_strands']==1760
-          assert m['added_swept_upper_fibers']>=200
+          assert m['added_swept_upper_fibers']==180
           assert m['added_upper_groom_groups']==2
           assert m['hair_root_min_z']>1.785
           assert m['rigged'] is False and m['unity_character_replaced'] is False
