@@ -22,4 +22,25 @@ Status artístico: **não aprovado por padrão**. Não realizar merge ou substit
 
 ## Execuções e avaliação visual
 
-Aguardando registro de execução e imagens verificadas.
+### Execução inicial
+
+- [42546868308](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42546868308) — sucesso técnico, nove PNGs produzidos. **Inspeção visual reprovou o primeiro passe:** bochechas e mandíbula lateral ficaram excessivamente largas; sobrancelhas eram placas espessas. O novo perfil também evidenciou nariz/lábios pouco naturais e cobertura rígida do cabelo na nuca.
+
+### Correção e resultado do segundo passe
+
+- [42547235335](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42547235335) — **sucesso verificado**.
+- Artefato: `necromancer-anatomical-0-9-4-cc0-preview`, ID **13643638980**, ZIP contendo projeto `.blend`, `.fbx`, nove imagens de inspeção, catálogo de assets e metadados de procedência.
+- Corpo preservado: **12.502 vértices / 12.500 faces**, exatamente antes e depois da escultura; deformados **3.497 vértices** na malha, sendo **142** localizados na região das orelhas.
+- Dois olhos de origem CC0 presentes; altura de cada malha ocular reduzida de **0,05596 m** para **0,04029 m** neste passe, com quatro objetos de íris/pupila reancorados.
+- Duas sobrancelhas reconstruídas como malhas separadas, com espessura reduzida após inspeção.
+- **485 mechas** e **2.926 quads de calça** herdados da versão 0.9.3, mantendo componentes editáveis. `unity/` intocado, sem rigging ou animações.
+
+### Avaliação artística das imagens reais
+
+- A frente e a vista três-quartos mostram olhos proporcionalmente menores, orelhas mais discretas e sobrancelhas menos espessas do que no primeiro passe 0.9.4.
+- A segunda correção reduziu as bochechas excessivamente largas que o primeiro passe introduziu.
+- **O rosto permanece juvenil e não corresponde ainda à identidade visual do necromante masculino aprovado.** Lábios e nariz permanecem arredondados, queixo e mandíbula têm transições artificiais, e a região das pálpebras ficou excessivamente escura.
+- A vista de perfil mostra que o cabelo ainda tem uma cobertura geométrica rígida na nuca, com mechas aparentando fitas, não cabelo natural.
+
+**Decisão:** manter versão 0.9.4 como experimento intermediário tecnicamente validado, **não aprovado artisticamente**. A próxima intervenção não deve ser outro conjunto pequeno de deslocamentos genéricos: requer redefinição dirigida dos volumes faciais (nariz, boca, maçã, órbita e mandíbula) com inspeção simultânea em frente/perfil/três-quartos, e reconstrução da implantação posterior do cabelo a partir da referência real. O render da obra aprovada não está versionado no repositório; não se pode garantir semelhança. PR permanece em rascunho e Unity preservado.
+
