@@ -23,4 +23,9 @@ A base realista só deve substituir a estilizada no próximo estágio se as imag
 
 ## Resultado de execução
 
-A registrar após a execução do GitHub Actions e inspeção real das oito imagens.
+- GitHub Actions [42551358033](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42551358033): **sucesso**, oito renders reais, .blend de comparação e FBX da base realista.
+- Base Stylized: 12.502 vértices, 12.500 faces, largura de cabeça aferida 0,2958 m.
+- Base Realistic: 10.582 vértices, 10.590 faces, largura de cabeça aferida 0,2050 m (em ambos os casos normalizados para 1,90 m).
+- Ordem de loops e contagem de vértices **não compatíveis**; transferência de vértices direta seria incorreta.
+- Inspeção frontal e de perfil: base realista com olhos menores, mandíbula/nariz mais adultos e orelhas proporcionais. A base estilizada tem traços infantis, sobretudo olhos/orelhas excessivos.
+- Decisão: adotar a malha **Realistic como candidata** ao herói, sem copiar a escultura facial da 0.9.4. O estudo sozinho não valida cabelo/roupas ou a semelhança final à arte aprovada.
