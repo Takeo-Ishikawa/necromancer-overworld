@@ -78,5 +78,5 @@ jobs:
             tools/blender/anatomical/output/*.fbx
             tools/blender/anatomical/output/*.png
             tools/blender/anatomical/output/*.json
-          retention-days: 14
+          retention-days: 1
           if-no-files-found: error

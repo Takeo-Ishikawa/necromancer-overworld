@@ -92,4 +92,4 @@ jobs:
             tools/blender/character_trouser_detail.png
             tools/blender/character_090_metrics.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1

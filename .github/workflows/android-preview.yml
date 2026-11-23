@@ -106,7 +106,7 @@ jobs:
           path: build/Android/necromancer-overworld-preview.apk
           archive: false
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 1
 
       - name: Remove temporary signing files
         if: always()

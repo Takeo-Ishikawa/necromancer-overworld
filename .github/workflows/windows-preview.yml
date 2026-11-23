@@ -70,5 +70,5 @@ jobs:
           name: necromancer-overworld-windows-x64
           path: build/StandaloneWindows64/
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 1
           compression-level: 6
