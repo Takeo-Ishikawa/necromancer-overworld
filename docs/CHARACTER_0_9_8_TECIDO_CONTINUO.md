@@ -25,4 +25,21 @@ Para declarar sucesso técnico, deve verificar-se: corpo inalterado, dois olhos 
 
 ## Execuções e conclusão
 
-A completar após inspeção das imagens reais. PR permanece em rascunho e Unity não é modificado.
+## Execuções e conclusão (verificação em 24/11/2026)
+
+- [GitHub Actions 42564852032](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/42564852032), tentativa 2: **sucesso técnico confirmado**, com oito PNGs inspecionados. A tentativa original de 09/11 também terminara com sucesso, mas o artefato havia expirado. A segunda tentativa regenerou o mesmo código, sem commit novo.
+- Artefato: `necromancer-realistic-0-9-8-continuous-textile`, ID **14924752839**. Conteúdo: `necromancer_realistic_098.blend`, `necromancer_realistic_098.fbx`, `source_metadata.json` e oito renders PNG.
+- **Conectividade verificada**: uma única componente de tecido, 1.122 vértices e 1.086 quads. A calça é objeto e datablock próprios, preservando duas shape keys editáveis e uma UV layer independente. Houve 702 coordenadas de roupa alteradas.
+- O corpo original mantém 10.582 vértices / 10.590 faces; o hash SHA-256 de suas coordenadas antes e depois é idêntico (`38989292ed2dd123c31b8135f2adc18c3202399de1683b74f8bd8cddf9d85e4d`). Os dois olhos originais também permanecem sem modificações.
+- Nove componentes experimentais antigos de loft e ponte continuam ocultos e foram excluídos do FBX.
+- O penteado mantém 1.760 fibras curtas e 180 fios complementares na coroa e franja.
+
+### Parecer visual
+
+Os renders de frente, perfil, costas, três-quartos, detalhe do tecido e rosto confirmam que a versão 0.9.8 não reintroduziu a descontinuidade grosseira tipo bermuda/leggings. A superfície visual é mais consistente.
+
+**Problemas ainda existentes:** a calça continua apertada na pelve, reproduzindo a anatomia de maneira pouco convincente para tecido; as costuras laterais exibem linhas escalonadas porque foram calculadas por seleção do vértice mais externo em cada faixa vertical. As braçadeiras e bolsas também são provisórias. O cabelo ainda possui padrão procedural uniforme. Não confundir o sucesso da topologia/CI com aprovação artística.
+
+**Próximo trabalho recomendado:** redesenhar a costura lateral por uma curva suavizada no espaço paramétrico da superfície, reduzir relevos da região pélvica e reforçar o acabamento do penteado e acessórios. Não alterar o rosto nem integrar em Unity até aprovação artística.
+
+O PR permanece em **rascunho** e a personagem jogável do Unity não foi substituída.
