@@ -254,102 +254,105 @@ eyes_after=[digest(o) for o in eyes]
 assert body_after==body_before
 assert eyes_after==eyes_before
 
-metadata={
- "stage":"0.9.8 independent one-piece source-derived cloth quad mesh, no disconnected loft tubes",
- "source":base["previous"]["stage"]["ref"]["SOURCE"],
- "license":"CC0-1.0","bundle_version":"1.4.1",
- "base_collection":"Body Male - Realistic",
- "body_vertices":len(body.data.vertices),
- "body_faces":len(body.data.polygons),
- "body_coordinate_sha256_before":body_before,
- "body_coordinate_sha256_after":body_after,
- "source_eye_hashes_unchanged":eyes_after==eyes_before,
- "garment_quad_faces":len(trousers.data.polygons),
- "garment_vertices":len(trousers.data.vertices),
- "garment_connected_components":components,
- "garment_component_vertex_counts":component_sizes,
- "garment_shape_key_names":[k.name for k in trousers.data.shape_keys.key_blocks],
- "garment_vertices_modified":affected,
- "garment_uv_layers":[l.name for l in trousers.data.uv_layers],
- "separate_seam_curves":len(seams),
- "seam_lengths_m":[round(v,3) for v in seam_lengths],
- "hidden_rejected_experimental_components":len(hidden_loft),
- "base_swept_fiber_count":base["hair_count"],
- "original_short_fibers":base["previous"]["all_fibers"],
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"Single connected editable cloth is re-sculpted from original source quad topology, not independently pattern-cut and sim-sewn. Fabric still requires professional clothing sculpt, UV production, rig and visual reference."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-print("CONTINUOUS_TROUSERS_V098",json.dumps(metadata),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=25
-scene.cycles.use_denoising=True
-scene.render.resolution_percentage=100
-scene.render.film_transparent=False
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("098 | studio charcoal blue soft light")
-world.use_nodes=True
-bg=world.node_tree.nodes.get("Background")
-bg.inputs["Color"].default_value=(.15,.15,.175,1)
-bg.inputs["Strength"].default_value=.65
-scene.world=world
-for name,pos,power,size in (
- ("098 | neutral key",(2.2,-3.5,4.2),640,4.0),
- ("098 | soft fill",(-2.8,-1.3,2.6),270,3.7),
- ("098 | reverse rim",(-1.1,2.7,3.4),430,3.3)
-):
-    l=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,l)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    l.energy=power
-    l.shape="DISK"
-    l.size=size
-camera_data=bpy.data.cameras.new("098 | real orthographic inspection")
-camera=bpy.data.objects.new("098 | real orthographic inspection",camera_data)
-scene.collection.objects.link(camera)
-camera_data.type="ORTHO"
-scene.camera=camera
-# Original curves retained in Blender; conversion ONLY after save for FBX.
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_098.blend"))
-for obj in list(scene.objects):
-    if obj.type!="CURVE" or obj.hide_render:
-        continue
+# Allow downstream 0.9.9 revisions to load this stage without rendering.
+if os.environ.get("NECROMANCER_098_BUILD_ONLY") != "1":
+    metadata={
+     "stage":"0.9.8 independent one-piece source-derived cloth quad mesh, no disconnected loft tubes",
+     "source":base["previous"]["stage"]["ref"]["SOURCE"],
+     "license":"CC0-1.0","bundle_version":"1.4.1",
+     "base_collection":"Body Male - Realistic",
+     "body_vertices":len(body.data.vertices),
+     "body_faces":len(body.data.polygons),
+     "body_coordinate_sha256_before":body_before,
+     "body_coordinate_sha256_after":body_after,
+     "source_eye_hashes_unchanged":eyes_after==eyes_before,
+     "garment_quad_faces":len(trousers.data.polygons),
+     "garment_vertices":len(trousers.data.vertices),
+     "garment_connected_components":components,
+     "garment_component_vertex_counts":component_sizes,
+     "garment_shape_key_names":[k.name for k in trousers.data.shape_keys.key_blocks],
+     "garment_vertices_modified":affected,
+     "garment_uv_layers":[l.name for l in trousers.data.uv_layers],
+     "separate_seam_curves":len(seams),
+     "seam_lengths_m":[round(v,3) for v in seam_lengths],
+     "hidden_rejected_experimental_components":len(hidden_loft),
+     "base_swept_fiber_count":base["hair_count"],
+     "original_short_fibers":base["previous"]["all_fibers"],
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"Single connected editable cloth is re-sculpted from original source quad topology, not independently pattern-cut and sim-sewn. Fabric still requires professional clothing sculpt, UV production, rig and visual reference."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    print("CONTINUOUS_TROUSERS_V098",json.dumps(metadata),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=25
+    scene.cycles.use_denoising=True
+    scene.render.resolution_percentage=100
+    scene.render.film_transparent=False
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("098 | studio charcoal blue soft light")
+    world.use_nodes=True
+    bg=world.node_tree.nodes.get("Background")
+    bg.inputs["Color"].default_value=(.15,.15,.175,1)
+    bg.inputs["Strength"].default_value=.65
+    scene.world=world
+    for name,pos,power,size in (
+     ("098 | neutral key",(2.2,-3.5,4.2),640,4.0),
+     ("098 | soft fill",(-2.8,-1.3,2.6),270,3.7),
+     ("098 | reverse rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        l=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,l)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        l.energy=power
+        l.shape="DISK"
+        l.size=size
+    camera_data=bpy.data.cameras.new("098 | real orthographic inspection")
+    camera=bpy.data.objects.new("098 | real orthographic inspection",camera_data)
+    scene.collection.objects.link(camera)
+    camera_data.type="ORTHO"
+    scene.camera=camera
+    # Original curves retained in Blender; conversion ONLY after save for FBX.
     bpy.ops.object.select_all(action="DESELECT")
-    obj.hide_set(False)
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active=obj
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for obj in list(scene.objects):
-    if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_098.blend"))
+    for obj in list(scene.objects):
+        if obj.type!="CURVE" or obj.hide_render:
+            continue
+        bpy.ops.object.select_all(action="DESELECT")
         obj.hide_set(False)
         obj.select_set(True)
-assert len(bpy.context.selected_objects)>18
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_realistic_098.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-def render(name,pos,target,scale,reso=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=reso
-    camera_data.ortho_scale=scale
-    camera.location=pos
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_098",name,flush=True)
-for name,pos in (
- ("front",(0,-4.6,1.24)),
- ("side",(4.6,0,1.25)),
- ("back",(0,4.6,1.25)),
- ("threequarter",(3,-4,1.3))
-):render(name,pos,(0,0,1),2.27)
-render("face_threequarter",(2,-2.8,1.82),(0,0,1.75),.52,(760,760))
-render("trousers_front",(0,-3,.70),(0,0,.66),1.16,(760,760))
-render("trousers_side",(2.4,-.7,.7),(0,0,.64),1.16,(760,760))
-render("hair_back",(0,2.5,1.84),(0,0,1.84),.53,(760,760))
-print("SUCCESS_098",json.dumps(metadata),flush=True)
+        bpy.context.view_layer.objects.active=obj
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in list(scene.objects):
+        if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+            obj.hide_set(False)
+            obj.select_set(True)
+    assert len(bpy.context.selected_objects)>18
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_realistic_098.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    def render(name,pos,target,scale,reso=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=reso
+        camera_data.ortho_scale=scale
+        camera.location=pos
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_098",name,flush=True)
+    for name,pos in (
+     ("front",(0,-4.6,1.24)),
+     ("side",(4.6,0,1.25)),
+     ("back",(0,4.6,1.25)),
+     ("threequarter",(3,-4,1.3))
+    ):render(name,pos,(0,0,1),2.27)
+    render("face_threequarter",(2,-2.8,1.82),(0,0,1.75),.52,(760,760))
+    render("trousers_front",(0,-3,.70),(0,0,.66),1.16,(760,760))
+    render("trousers_side",(2.4,-.7,.7),(0,0,.64),1.16,(760,760))
+    render("hair_back",(0,2.5,1.84),(0,0,1.84),.53,(760,760))
+    print("SUCCESS_098",json.dumps(metadata),flush=True)
+    
