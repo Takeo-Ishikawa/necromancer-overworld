@@ -292,102 +292,105 @@ assert len(changed)>=45
 
 assert digest(body)==body_hash and [digest(e) for e in eyes]==eye_hashes
 
-meta={
- "version":"0.9.12",
- "stage":"new self-contained forearm leather patterns and reversible frontal cloth drape",
- "source":"Blender Studio Human Base Meshes v1.4.1, Body Male - Realistic",
- "license":"CC0-1.0",
- "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
- "body_digest_before":body_hash,"body_digest_after":digest(body),
- "eye_hashes_unchanged":[digest(e) for e in eyes]==eye_hashes,
- "old_body_derived_guard_count":len(guards),
- "old_body_derived_guards_hidden":all(g.hide_render for g in guards),
- "separately_modelled_leather_guards":len(new_guards),
- "radial_vertices_per_ring":RADIAL,
- "longitudinal_rings":RINGS,
- "bracer_vertices":[len(g.data.vertices) for g in new_guards],
- "bracer_quad_faces":[len(g.data.polygons) for g in new_guards],
- "bracer_pattern_uv_layers":[len(g.data.uv_layers) for g in new_guards],
- "bracer_source_section_statistics":section_stats,
- "curved_sew_rings":len(rim_curves),
- "trouser_connected_components":previous["p"]["prior"]["stage"]["components"],
- "trouser_vertices":len(trousers.data.vertices),
- "trouser_faces":len(trousers.data.polygons),
- "trouser_shape_keys":[key.name for key in trousers.data.shape_keys.key_blocks],
- "new_cloth_vertices_modified":len(changed),
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"New bracers are procedural section-fitted leather tubes, not scanned production patterns. Body source preserved. Trouser changes remain a source-derived one-piece cloth sculpt, not pattern cut."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(meta,indent=2),encoding="utf-8")
-print("VALIDATE_0912",json.dumps(meta),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=22
-scene.cycles.use_denoising=True
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("0912 | neutral material presentation")
-world.use_nodes=True
-world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.17,1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value=.68
-scene.world=world
-for name,loc,power,size in (
-    ("0912 key",(2.2,-3.5,4.2),640,4),
-    ("0912 fill",(-2.8,-1.3,2.6),310,3.7),
-    ("0912 rim",(-1.1,2.7,3.4),430,3.3)
-):
-    light=bpy.data.lights.new(name,"AREA")
-    obj=bpy.data.objects.new(name,light)
-    scene.collection.objects.link(obj)
-    obj.location=loc
-    light.energy=power
-    light.shape="DISK"
-    light.size=size
-camdata=bpy.data.cameras.new("0912 | orthographic 3D model review")
-cam=bpy.data.objects.new("0912 | orthographic 3D model review",camdata)
-scene.collection.objects.link(cam)
-camdata.type="ORTHO"
-scene.camera=cam
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0912.blend"))
-
-for obj in list(scene.objects):
-    if obj.type!="CURVE" or obj.hide_render:continue
+# Reuse geometry without exporting/rerendering when 0.9.13 imports this module.
+if os.environ.get('NECROMANCER_0912_BUILD_ONLY') != '1':
+    meta={
+     "version":"0.9.12",
+     "stage":"new self-contained forearm leather patterns and reversible frontal cloth drape",
+     "source":"Blender Studio Human Base Meshes v1.4.1, Body Male - Realistic",
+     "license":"CC0-1.0",
+     "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
+     "body_digest_before":body_hash,"body_digest_after":digest(body),
+     "eye_hashes_unchanged":[digest(e) for e in eyes]==eye_hashes,
+     "old_body_derived_guard_count":len(guards),
+     "old_body_derived_guards_hidden":all(g.hide_render for g in guards),
+     "separately_modelled_leather_guards":len(new_guards),
+     "radial_vertices_per_ring":RADIAL,
+     "longitudinal_rings":RINGS,
+     "bracer_vertices":[len(g.data.vertices) for g in new_guards],
+     "bracer_quad_faces":[len(g.data.polygons) for g in new_guards],
+     "bracer_pattern_uv_layers":[len(g.data.uv_layers) for g in new_guards],
+     "bracer_source_section_statistics":section_stats,
+     "curved_sew_rings":len(rim_curves),
+     "trouser_connected_components":previous["p"]["prior"]["stage"]["components"],
+     "trouser_vertices":len(trousers.data.vertices),
+     "trouser_faces":len(trousers.data.polygons),
+     "trouser_shape_keys":[key.name for key in trousers.data.shape_keys.key_blocks],
+     "new_cloth_vertices_modified":len(changed),
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"New bracers are procedural section-fitted leather tubes, not scanned production patterns. Body source preserved. Trouser changes remain a source-derived one-piece cloth sculpt, not pattern cut."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(meta,indent=2),encoding="utf-8")
+    print("VALIDATE_0912",json.dumps(meta),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=22
+    scene.cycles.use_denoising=True
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("0912 | neutral material presentation")
+    world.use_nodes=True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.17,1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value=.68
+    scene.world=world
+    for name,loc,power,size in (
+        ("0912 key",(2.2,-3.5,4.2),640,4),
+        ("0912 fill",(-2.8,-1.3,2.6),310,3.7),
+        ("0912 rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        light=bpy.data.lights.new(name,"AREA")
+        obj=bpy.data.objects.new(name,light)
+        scene.collection.objects.link(obj)
+        obj.location=loc
+        light.energy=power
+        light.shape="DISK"
+        light.size=size
+    camdata=bpy.data.cameras.new("0912 | orthographic 3D model review")
+    cam=bpy.data.objects.new("0912 | orthographic 3D model review",camdata)
+    scene.collection.objects.link(cam)
+    camdata.type="ORTHO"
+    scene.camera=cam
     bpy.ops.object.select_all(action="DESELECT")
-    obj.hide_set(False)
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active=obj
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for obj in list(scene.objects):
-    if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0912.blend"))
+    
+    for obj in list(scene.objects):
+        if obj.type!="CURVE" or obj.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
         obj.hide_set(False)
         obj.select_set(True)
-if len(bpy.context.selected_objects)<23:
-    raise RuntimeError("FBX is missing intended source anatomy and geometry")
-bpy.ops.export_scene.fbx(
-    filepath=str(OUT/"necromancer_realistic_0912.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def render(name,where,focus,scale,res=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=res
-    camdata.ortho_scale=scale
-    cam.location=where
-    cam.rotation_euler=(Vector(focus)-cam.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_0912",name,flush=True)
-for name,loc in (
-    ("front",(0,-4.6,1.24)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3,-4,1.30))
-):render(name,loc,(0,0,1),2.27)
-render("bracer_front",(0,-2.3,1.11),(0,0,1.09),.80,(760,760))
-render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
-render("bracer_side",(3,-.25,1.1),(.50,0,1.1),.84,(760,760))
-render("pelvis_front",(0,-2.8,1.01),(0,0,.99),.93,(760,760))
-print("SUCCESS_0912",flush=True)
+        bpy.context.view_layer.objects.active=obj
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in list(scene.objects):
+        if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+            obj.hide_set(False)
+            obj.select_set(True)
+    if len(bpy.context.selected_objects)<23:
+        raise RuntimeError("FBX is missing intended source anatomy and geometry")
+    bpy.ops.export_scene.fbx(
+        filepath=str(OUT/"necromancer_realistic_0912.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def render(name,where,focus,scale,res=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=res
+        camdata.ortho_scale=scale
+        cam.location=where
+        cam.rotation_euler=(Vector(focus)-cam.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_0912",name,flush=True)
+    for name,loc in (
+        ("front",(0,-4.6,1.24)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3,-4,1.30))
+    ):render(name,loc,(0,0,1),2.27)
+    render("bracer_front",(0,-2.3,1.11),(0,0,1.09),.80,(760,760))
+    render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
+    render("bracer_side",(3,-.25,1.1),(.50,0,1.1),.84,(760,760))
+    render("pelvis_front",(0,-2.8,1.01),(0,0,.99),.93,(760,760))
+    print("SUCCESS_0912",flush=True)
+    
