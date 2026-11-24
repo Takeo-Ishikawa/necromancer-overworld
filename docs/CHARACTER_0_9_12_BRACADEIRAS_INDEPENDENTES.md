@@ -19,4 +19,20 @@ A passagem dos testes comprova integridade da pipeline, não aprova automaticame
 
 ## Execuções e conclusão
 
-A preencher somente após conferir o resultado real.
+### Testes técnicos e inspeção real
+
+- [GitHub Actions 45448952592](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/45448952592): **sucesso técnico**, oito PNGs autênticos inspecionados. A reconstrução eliminou o contorno recortado, mas as duas proteções ficaram largas demais, com aparência de tubos rígidos e bordas horizontais pouco naturais.
+- Ajuste posterior: redução conservadora da profundidade e do volume perto dos punhos, maior afunilamento no eixo do braço, inclinação de 3 mm nas bordas de cada anel e microtextura leve no couro. Sem alterações no corpo nem nos olhos originais.
+- [GitHub Actions 45449663455](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/45449663455): **sucesso técnico e oito renders finais inspecionados**. Artefato final `necromancer-realistic-0-9-12-independent-bracers`, ID **14947436737**, com `necromancer_realistic_0912.blend`, `necromancer_realistic_0912.fbx`, `source_metadata.json` e oito PNGs.
+- O corpo adulto CC0 permanece com **10.582 vértices / 10.590 faces**, SHA-256 das coordenadas **`38989292ed2dd123c31b8135f2adc18c3202399de1683b74f8bd8cddf9d85e4d`** antes e depois. Os dois olhos também preservaram seus hashes.
+- As **duas novas braçadeiras** têm malhas completamente separadas do corpo e entre si, **704 vértices e 672 quads cada**, UV próprias e quatro guias circulares de costura editáveis. O par antigo com bordas recortadas permanece oculto no `.blend` e fora da exportação FBX.
+- Em ambas as proteções, raio médio X ~**0,0518 m** e Y ~**0,0632 m** no resultado final, contra ~0,0524 m / 0,0671 m na primeira tentativa. As extremidades foram afuniladas de maneira controlada.
+- A calça continua tendo **1.122 vértices e 1.086 faces**, com **uma componente conectada**. Quinto shape key adicionado: `0912 | Relaxed wool forward drape study`; **79 vértices do tecido** sofreram alteração pequena, reversível.
+
+### Parecer artístico
+
+**Evolução aprovada como protótipo técnico, não como personagem final.** A forma das bordas está mais limpa e evita as pontas salientes da 0.9.11, enquanto o segundo ajuste reduz parte da rigidez visual do primeiro loft. No entanto, o couro ainda parece uma proteção tubular simplificada: falta articulação anatômica sutil na seção transversal, encaixe artesanal junto ao punho e variedade visual no material. O tecido pélvico permanece demasiadamente anatômico; o cabelo e o restante do figurino ainda são estudos procedurais.
+
+**Próximo desenvolvimento:** realizar estudo de painéis de couro realmente anatômicos (com superfície frontal e fechamento traseiro), sem regressões de borda; investigar uma calça modelada por moldes/caimento próprio, em vez de deslocar indefinidamente a casca derivada do corpo. A referência conceitual original não está arquivada no repositório, portanto não se afirma fidelidade exata.
+
+**Nenhum arquivo em `unity/` foi modificado.** Rigging e animações não foram adicionados. PR #2 continua **em rascunho**, sem merge no `main`.
