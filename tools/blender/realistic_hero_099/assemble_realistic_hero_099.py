@@ -168,93 +168,96 @@ for o in seams:
 assert digest(body)==before
 assert [digest(e) for e in eyes]==eyes_before
 
-metadata={
- "stage":"0.9.9 continuous cloth pelvis smoothing and surface raycast cubic side seams",
- "license":"CC0-1.0","bundle_version":"1.4.1","base_collection":"Body Male - Realistic",
- "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
- "body_digest_before":before,"body_digest_after":digest(body),
- "eye_digests_unchanged":[digest(e) for e in eyes]==eyes_before,
- "garment_faces":len(trousers.data.polygons),
- "garment_vertices":len(trousers.data.vertices),
- "garment_components":stage["components"],
- "garment_shape_keys":[k.name for k in trousers.data.shape_keys.key_blocks],
- "pelvic_vertices_refined":len(modified),
- "seam_curve_count":len(seams),
- "seam_total_raycast_hits":rays_hit,
- "max_seam_control_segment_m":round(max_segment_jump,6),
- "old_zigzag_seams_hidden":all(o.hide_render for o in stage["seams"]),
- "old_disconnected_garments_hidden":all(o.hide_render for o in stage["hidden_loft"]),
- "uv_layers":len(trousers.data.uv_layers),
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"CC0 derived continuous garment remains a body-surface approximation, not pattern-cut cloth. Side seams are guide curves, not finished stitch topology."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-print("V099_VALIDATE",json.dumps(metadata),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=23
-scene.cycles.use_denoising=True
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("099 | neutral review studio")
-world.use_nodes=True
-world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.175,1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value=.65
-scene.world=world
-for name,position,power,size in (
- ("099 Key",(2.2,-3.5,4.2),650,4.1),
- ("099 Fill",(-2.8,-1.3,2.6),280,3.6),
- ("099 Rim",(-1.1,2.7,3.4),430,3.3)
-):
-    light=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,light)
-    scene.collection.objects.link(ob)
-    ob.location=position
-    light.energy=power
-    light.shape="DISK"
-    light.size=size
-cdata=bpy.data.cameras.new("099 | orthographic review")
-camera=bpy.data.objects.new("099 | orthographic review",cdata)
-scene.collection.objects.link(camera)
-scene.camera=camera
-cdata.type="ORTHO"
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_099.blend"))
-for o in list(scene.objects):
-    if o.type!="CURVE" or o.hide_render:continue
+# Reusable finished geometry and seam scene for v0.9.10 (without older exports).
+if os.environ.get('NECROMANCER_099_BUILD_ONLY') != '1':
+    metadata={
+     "stage":"0.9.9 continuous cloth pelvis smoothing and surface raycast cubic side seams",
+     "license":"CC0-1.0","bundle_version":"1.4.1","base_collection":"Body Male - Realistic",
+     "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
+     "body_digest_before":before,"body_digest_after":digest(body),
+     "eye_digests_unchanged":[digest(e) for e in eyes]==eyes_before,
+     "garment_faces":len(trousers.data.polygons),
+     "garment_vertices":len(trousers.data.vertices),
+     "garment_components":stage["components"],
+     "garment_shape_keys":[k.name for k in trousers.data.shape_keys.key_blocks],
+     "pelvic_vertices_refined":len(modified),
+     "seam_curve_count":len(seams),
+     "seam_total_raycast_hits":rays_hit,
+     "max_seam_control_segment_m":round(max_segment_jump,6),
+     "old_zigzag_seams_hidden":all(o.hide_render for o in stage["seams"]),
+     "old_disconnected_garments_hidden":all(o.hide_render for o in stage["hidden_loft"]),
+     "uv_layers":len(trousers.data.uv_layers),
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"CC0 derived continuous garment remains a body-surface approximation, not pattern-cut cloth. Side seams are guide curves, not finished stitch topology."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    print("V099_VALIDATE",json.dumps(metadata),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=23
+    scene.cycles.use_denoising=True
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("099 | neutral review studio")
+    world.use_nodes=True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.175,1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value=.65
+    scene.world=world
+    for name,position,power,size in (
+     ("099 Key",(2.2,-3.5,4.2),650,4.1),
+     ("099 Fill",(-2.8,-1.3,2.6),280,3.6),
+     ("099 Rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        light=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,light)
+        scene.collection.objects.link(ob)
+        ob.location=position
+        light.energy=power
+        light.shape="DISK"
+        light.size=size
+    cdata=bpy.data.cameras.new("099 | orthographic review")
+    camera=bpy.data.objects.new("099 | orthographic review",cdata)
+    scene.collection.objects.link(camera)
+    scene.camera=camera
+    cdata.type="ORTHO"
     bpy.ops.object.select_all(action="DESELECT")
-    o.hide_set(False)
-    o.select_set(True)
-    bpy.context.view_layer.objects.active=o
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for o in list(scene.objects):
-    if o.type=="MESH" and not o.hide_render and not o.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_099.blend"))
+    for o in list(scene.objects):
+        if o.type!="CURVE" or o.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
         o.hide_set(False)
         o.select_set(True)
-assert len(bpy.context.selected_objects)>18
-bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_099.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def shot(name,where,target,scale,res=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=res
-    cdata.ortho_scale=scale
-    camera.location=where
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("V099_RENDER",name,flush=True)
-for name,loc in (
- ("front",(0,-4.6,1.24)),
- ("side",(4.6,0,1.25)),
- ("back",(0,4.6,1.25)),
- ("threequarter",(3,-4,1.30))
-):shot(name,loc,(0,0,1),2.27)
-shot("face_threequarter",(2,-2.8,1.82),(0,0,1.75),.52,(760,760))
-shot("trousers_front",(0,-3,.70),(0,0,.66),1.16,(760,760))
-shot("trousers_side",(2.4,-.7,.7),(0,0,.64),1.16,(760,760))
-shot("seam_side",(2.4,-.05,.67),(0,0,.65),1.06,(760,760))
-print("SUCCESS_099",flush=True)
+        bpy.context.view_layer.objects.active=o
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in list(scene.objects):
+        if o.type=="MESH" and not o.hide_render and not o.name.startswith("095 | stylized"):
+            o.hide_set(False)
+            o.select_set(True)
+    assert len(bpy.context.selected_objects)>18
+    bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_099.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def shot(name,where,target,scale,res=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=res
+        cdata.ortho_scale=scale
+        camera.location=where
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("V099_RENDER",name,flush=True)
+    for name,loc in (
+     ("front",(0,-4.6,1.24)),
+     ("side",(4.6,0,1.25)),
+     ("back",(0,4.6,1.25)),
+     ("threequarter",(3,-4,1.30))
+    ):shot(name,loc,(0,0,1),2.27)
+    shot("face_threequarter",(2,-2.8,1.82),(0,0,1.75),.52,(760,760))
+    shot("trousers_front",(0,-3,.70),(0,0,.66),1.16,(760,760))
+    shot("trousers_side",(2.4,-.7,.7),(0,0,.64),1.16,(760,760))
+    shot("seam_side",(2.4,-.05,.67),(0,0,.65),1.06,(760,760))
+    print("SUCCESS_099",flush=True)
+    
