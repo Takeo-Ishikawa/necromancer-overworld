@@ -65,6 +65,8 @@ jobs:
           assert m['pelvis_vertices_adjusted']>=35
           assert m['original_bracer_count']==2
           assert m['leather_binding_objects']==4
+          assert m['rejected_raised_rim_hidden'] is True
+          assert m['visible_guard_material_border_faces']>=25
           assert all(len(v)==2 for v in m['binding_edge_counts'].values())
           assert m['max_binding_edge_length_m']<.04
           assert m['new_guard_stitches']>=8
