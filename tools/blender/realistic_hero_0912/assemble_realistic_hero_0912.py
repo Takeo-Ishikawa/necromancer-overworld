@@ -59,6 +59,17 @@ def make_material(name,color,rough=.89):
 leather=make_material("0912 | charcoal smoked leather",(.093,.078,.087),.89)
 trim=make_material("0912 | darker leather cuff bindings",(.066,.058,.068),.92)
 spine=make_material("0912 | quiet back-stitched seam",(.071,.063,.069),.94)
+# Fine leather surface grain, without noisy metal or embossed seams.
+nodes=leather.node_tree.nodes
+links=leather.node_tree.links
+noise=nodes.new("ShaderNodeTexNoise")
+noise.inputs["Scale"].default_value=140.0
+noise.inputs["Detail"].default_value=2.0
+bump=nodes.new("ShaderNodeBump")
+bump.inputs["Strength"].default_value=.034
+bump.inputs["Distance"].default_value=.00045
+links.new(noise.outputs["Fac"],bump.inputs["Height"])
+links.new(bump.outputs["Normal"],nodes.get("Principled BSDF").inputs["Normal"])
 stitches_mat=make_material("0912 | muted ash thread",(.17,.151,.142),.92)
 source_collection=bpy.data.collections.new("0912 | original body-based guard shells ARCHIVED")
 bpy.context.scene.collection.children.link(source_collection)
@@ -132,9 +143,12 @@ for guard in guards:
         ry=max(.025,min(.09,ry))
         # Subtle taper near both cuffs, without hard flat bands or spikes.
         edge=min(j,RINGS-1-j)
-        taper=.96+.04*smooth(0,3,edge)
+        # The first render made these too rigid and oversized.
+        # Give the wrist a visibly narrower but non-pinched silhouette,
+        # and reduce depth along Y where the guard looked like a tube.
+        taper=(.905+.095*smooth(0,6,j))*(.965+.035*smooth(0,4,RINGS-1-j))
         rx*=taper
-        ry*=taper
+        ry*=taper*.955
         sections.append((z,cx,cy,rx,ry))
     section_stats[side]={
         "source_vertices":len(raw),
@@ -154,8 +168,11 @@ for guard in guards:
             # Real leather is not perfectly spherical: a small symmetric
             # longitudinal waviness makes a subtle flexible-cut silhouette.
             ripple=1+.007*math.sin(3*theta+.5*j/RINGS)
+            # A barely slanted, continuous cut follows the tilted arm,
+            # avoiding the hard horizontal upper edge seen initially.
+            slant=.0030*(-1 if side=="left" else 1)*math.cos(theta)
             vertices.append((cx+rx*math.cos(theta)*ripple,
-                             cy+ry*math.sin(theta)*ripple,z))
+                             cy+ry*math.sin(theta)*ripple,z+slant))
     faces=[]
     categories=[]
     for j in range(RINGS-1):
@@ -210,8 +227,9 @@ for guard in guards:
         spline.points.add(RADIAL-1)
         for k,cp in enumerate(spline.points):
             theta=2*math.pi*k/RADIAL
+            slant=.0030*(-1 if side=="left" else 1)*math.cos(theta)
             cp.co=(cx+(rx+.0010)*math.cos(theta),
-                   cy+(ry+.0010)*math.sin(theta),z,1)
+                   cy+(ry+.0010)*math.sin(theta),z+slant,1)
         spline.use_cyclic_u=True
         cdat.materials.append(stitches_mat)
         st=bpy.data.objects.new("0912 | "+side+" "+tag+" measured sewing",cdat)
