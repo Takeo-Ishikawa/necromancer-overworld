@@ -1,0 +1,99 @@
+name: Necromancer 0.9.14 Backed Leather Lacing and Curved Trouser Patterns
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/realistic_hero_0914/**'
+      - '.github/workflows/realistic-character-preview-0914.yml'
+
+jobs:
+  leather-lining-and-trouser-mockups:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils libgl1 libxi6 libxrender1 libxkbcommon-x11-0 libsm6
+
+      - name: Obtain official Blender Studio Human Base Meshes CC0 v1.4.1
+        run: |
+          mkdir -p tools/blender/anatomical/_source_bundle
+          curl -fL --retry 3 --retry-delay 4 --connect-timeout 30 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/human-base-meshes-v1.4.1.zip
+          unzip -t /tmp/human-base-meshes-v1.4.1.zip | tail -n 2
+          unzip -q /tmp/human-base-meshes-v1.4.1.zip -d tools/blender/anatomical/_source_bundle
+
+      - name: Cache Blender 4.5.15 LTS
+        uses: actions/cache@v4
+        id: blender-cache
+        with:
+          path: /opt/blender-4.5.15
+          key: official-blender-linux-x64-v4.5.15
+
+      - name: Install official Blender if cache absent
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 --connect-timeout 30 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.15-linux-x64.tar.xz
+          mkdir -p /opt/blender-4.5.15
+          tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
+
+      - name: Build 0.9.14 recessed rear leather and 3D cloth pattern previews
+        run: |
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/realistic_hero_0914/assemble_realistic_hero_0914.py
+
+      - name: Verify unmodified adult geometry and editable separate patterns
+        run: |
+          python3 - <<'PY'
+          import pathlib,json
+          p=pathlib.Path('tools/blender/realistic_hero_0914/output')
+          m=json.loads((p/'source_metadata.json').read_text(encoding='utf-8'))
+          assert m['version']=='0.9.14'
+          assert m['license']=='CC0-1.0'
+          assert (m['body_vertices'],m['body_faces'])==(10582,10590)
+          assert m['body_hash_before']==m['body_hash_after']
+          assert m['original_eyes_unchanged'] is True
+          assert m['prior_leather_panels_kept']==6
+          assert m['prior_cross_laces_kept']==16
+          assert m['rear_leather_gussets']==2
+          assert m['gusset_mesh_vertices']==[198,198]
+          assert m['gusset_quad_faces']==[168,168]
+          assert m['gusset_uvs']==[1,1]
+          assert 0.0029<=m['mean_gusset_surface_inset_m']<=0.0031
+          assert m['max_source_rear_slit_width_m']<0.028
+          assert m['trouser_draft_3d_pieces']==5
+          assert m['trouser_draft_curved_leg_panels']==4
+          assert all(v==286 for v in m['trouser_draft_quads_per_leg_panel'].values())
+          assert m['trouser_draft_hidden_for_character'] is True
+          assert m['active_trouser_components']==1
+          assert (m['active_trouser_vertices'],m['active_trouser_faces'])==(1122,1086)
+          assert m['active_trouser_shape_keys']==5
+          assert m['rigged'] is False and m['unity_character_replaced'] is False
+          for fn in (
+             'necromancer_realistic_0914.blend','necromancer_realistic_0914.fbx',
+             'hero_front.png','hero_side.png','hero_back.png','hero_threequarter.png',
+             'hero_bracer_back.png','hero_rear_lacing.png',
+             'hero_bracer_threequarter.png','hero_pants_front.png',
+             'hero_pattern_3d_drafts.png'
+          ):
+            f=p/fn
+            assert f.exists() and f.stat().st_size>10000, fn
+          print('PASS: untouched official body/eyes, 2 real rear gussets and 5 hidden 3D cloth drafts')
+          PY
+
+      - name: Upload Blender, FBX, metadata and genuine preview PNGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-realistic-0-9-14-leather-linings-and-patterns
+          path: |
+            tools/blender/realistic_hero_0914/output/*.blend
+            tools/blender/realistic_hero_0914/output/*.fbx
+            tools/blender/realistic_hero_0914/output/*.png
+            tools/blender/realistic_hero_0914/output/*.json
+          retention-days: 14
+          if-no-files-found: error

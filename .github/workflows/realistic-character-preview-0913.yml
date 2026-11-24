@@ -1,0 +1,97 @@
+name: Necromancer 0.9.13 Three-Panel Bracers and Trouser Pattern Study
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/realistic_hero_0913/**'
+      - '.github/workflows/realistic-character-preview-0913.yml'
+
+jobs:
+  real-anatomy-bracer-panels-0913:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils libgl1 libxi6 libxrender1 libxkbcommon-x11-0 libsm6
+
+      - name: Retrieve Blender Studio Human Base Meshes CC0
+        run: |
+          mkdir -p tools/blender/anatomical/_source_bundle
+          curl -fL --retry 3 --retry-delay 4 --connect-timeout 30 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/human-base-meshes-v1.4.1.zip
+          unzip -t /tmp/human-base-meshes-v1.4.1.zip | tail -n 2
+          unzip -q /tmp/human-base-meshes-v1.4.1.zip -d tools/blender/anatomical/_source_bundle
+
+      - name: Cache official Blender 4.5.15 LTS
+        uses: actions/cache@v4
+        id: blender-cache
+        with:
+          path: /opt/blender-4.5.15
+          key: official-blender-linux-x64-v4.5.15
+
+      - name: Install Blender if cache absent
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 --connect-timeout 30 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.15-linux-x64.tar.xz
+          mkdir -p /opt/blender-4.5.15
+          tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
+
+      - name: Assemble and render 0.9.13 split leather forearms
+        run: |
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/realistic_hero_0913/assemble_realistic_hero_0913.py
+
+      - name: Verify anatomical preservation, leather pattern pieces, hidden studies
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('tools/blender/realistic_hero_0913/output')
+          m=json.loads((p/'source_metadata.json').read_text(encoding='utf-8'))
+          assert m['license']=='CC0-1.0'
+          assert (m['body_vertices'],m['body_faces'])==(10582,10590)
+          assert m['body_hash_before']==m['body_hash_after']
+          assert m['eye_hashes_unchanged'] is True
+          assert m['source_full_cylinder_bracers_hidden'] is True
+          assert m['original_095_guards_hidden'] is True
+          assert m['leather_panel_count']==6
+          assert len(m['leather_panels_per_arm'])==2
+          assert all(len(x)==3 for x in m['leather_panels_per_arm'].values())
+          assert sorted(m['leather_panel_quads'].values())==[210,210,210,210,378,378]
+          assert all(x==1 for x in m['panel_uv_layers'])
+          assert m['rear_cross_lacing_count']==16
+          assert m['rear_lacing_max_length_m']<.055
+          assert m['leather_edge_stitch_guides']==8
+          assert m['flat_2d_trouser_pattern_count']==5
+          assert m['flat_patterns_hidden'] is True
+          assert m['active_trouser_connected_meshes']==1
+          assert (m['active_trouser_vertices'],m['active_trouser_faces'])==(1122,1086)
+          assert m['active_trouser_shape_keys']==5
+          assert m['rigged'] is False and m['unity_character_replaced'] is False
+          for fname in (
+            'necromancer_realistic_0913.blend','necromancer_realistic_0913.fbx',
+            'hero_front.png','hero_side.png','hero_back.png','hero_threequarter.png',
+            'hero_bracer_front.png','hero_bracer_threequarter.png',
+            'hero_bracer_back.png','hero_rear_lacing.png'
+          ):
+            f=p/fname
+            assert f.exists() and f.stat().st_size>10000,fname
+          print('PASS: 6 genuinely separate leather panels, rear lacing, 5 archived 2D trouser patterns, untouched body and eye mesh')
+          PY
+
+      - name: Upload editable Blender, FBX, metadata and eight genuine renders
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-realistic-0-9-13-panelled-leather
+          path: |
+            tools/blender/realistic_hero_0913/output/*.blend
+            tools/blender/realistic_hero_0913/output/*.fbx
+            tools/blender/realistic_hero_0913/output/*.png
+            tools/blender/realistic_hero_0913/output/*.json
+          retention-days: 14
+          if-no-files-found: error

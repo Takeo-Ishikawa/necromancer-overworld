@@ -1,0 +1,96 @@
+name: Necromancer 0.9.12 Independently Modelled Leather Bracers
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/blender/realistic_hero_0912/**'
+      - '.github/workflows/realistic-character-preview-0912.yml'
+
+jobs:
+  real-anatomy-custom-bracers-0912:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils libgl1 libxi6 libxrender1 libxkbcommon-x11-0 libsm6
+
+      - name: Download official Blender Studio CC0 Human Base Meshes
+        run: |
+          mkdir -p tools/blender/anatomical/_source_bundle
+          curl -fL --retry 3 --retry-delay 4 --connect-timeout 30 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/human-base-meshes-v1.4.1.zip
+          unzip -t /tmp/human-base-meshes-v1.4.1.zip | tail -n 2
+          unzip -q /tmp/human-base-meshes-v1.4.1.zip -d tools/blender/anatomical/_source_bundle
+
+      - name: Cache official Blender 4.5.15 LTS
+        uses: actions/cache@v4
+        id: blender-cache
+        with:
+          path: /opt/blender-4.5.15
+          key: official-blender-linux-x64-v4.5.15
+
+      - name: Install official Blender if absent
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 --connect-timeout 30 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.15-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.15-linux-x64.tar.xz
+          mkdir -p /opt/blender-4.5.15
+          tar -xf /tmp/blender-4.5.15-linux-x64.tar.xz --strip-components=1 -C /opt/blender-4.5.15
+
+      - name: Create 0.9.12 independent leather patterns and true renders
+        run: |
+          /opt/blender-4.5.15/blender --background --factory-startup --python tools/blender/realistic_hero_0912/assemble_realistic_hero_0912.py
+
+      - name: Validate adult source anatomy and separate quad lofts
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('tools/blender/realistic_hero_0912/output')
+          m=json.loads((p/'source_metadata.json').read_text(encoding='utf-8'))
+          assert m['version']=='0.9.12'
+          assert m['license']=='CC0-1.0'
+          assert (m['body_vertices'],m['body_faces'])==(10582,10590)
+          assert m['body_digest_before']==m['body_digest_after']
+          assert m['eye_hashes_unchanged'] is True
+          assert m['old_body_derived_guard_count']==2
+          assert m['old_body_derived_guards_hidden'] is True
+          assert m['separately_modelled_leather_guards']==2
+          assert m['radial_vertices_per_ring']==32
+          assert m['longitudinal_rings']==22
+          assert m['bracer_vertices']==[704,704]
+          assert m['bracer_quad_faces']==[672,672]
+          assert m['bracer_pattern_uv_layers']==[1,1]
+          assert m['curved_sew_rings']==4
+          assert m['trouser_connected_components']==1
+          assert (m['trouser_vertices'],m['trouser_faces'])==(1122,1086)
+          assert len(m['trouser_shape_keys'])==5
+          assert m['new_cloth_vertices_modified']>=45
+          assert m['rigged'] is False and m['unity_character_replaced'] is False
+          for f in (
+            'necromancer_realistic_0912.blend','necromancer_realistic_0912.fbx',
+            'hero_front.png','hero_side.png','hero_back.png','hero_threequarter.png',
+            'hero_bracer_front.png','hero_bracer_threequarter.png',
+            'hero_bracer_side.png','hero_pelvis_front.png'
+          ):
+            q=p/f
+            assert q.exists() and q.stat().st_size>10000,f
+          print('VALIDATED 0.9.12: source adult intact, separate bracers, 8 true views')
+          PY
+
+      - name: Upload original editable Blender, FBX, metadata and eight renders
+        uses: actions/upload-artifact@v4
+        with:
+          name: necromancer-realistic-0-9-12-independent-bracers
+          path: |
+            tools/blender/realistic_hero_0912/output/*.blend
+            tools/blender/realistic_hero_0912/output/*.fbx
+            tools/blender/realistic_hero_0912/output/*.png
+            tools/blender/realistic_hero_0912/output/*.json
+          retention-days: 14
+          if-no-files-found: error
