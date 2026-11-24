@@ -19,4 +19,21 @@ O workflow `.github/workflows/realistic-character-preview-0913.yml` executa Blen
 
 ## Resultado
 
-Pendente de análise dos renders. A execução técnica não constitui aprovação artística.
+### Compilações verificadas (24/11/2026)
+
+- [Execução 45473079128](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/45473079128): **sucesso técnico**; oito renders gerados, porém a vista de detalhe da amarração estava enquadrada no centro das costas e não mostrava o antebraço. O erro era na câmera, não na malha.
+- [Execução 45473743993](https://github.com/Takeo-Ishikawa/necromancer-overworld/actions/runs/45473743993): **sucesso técnico**, com o enquadramento corrigido; oito imagens genuínas inspecionadas.
+- Artefato final: `necromancer-realistic-0-9-13-panelled-leather` (ID **14957673921**), contendo `necromancer_realistic_0913.blend`, `necromancer_realistic_0913.fbx`, `source_metadata.json` e oito vistas PNG.
+- A anatomia adulta original preservou integralmente seu SHA-256 de coordenadas `38989292ed2dd123c31b8135f2adc18c3202399de1683b74f8bd8cddf9d85e4d` antes/depois. Dois olhos também preservados. Corpo: **10.582 vértices / 10.590 faces**.
+- Cada antebraço apresenta **três painéis independentes**: um frontal de **378 quads** e dois posteriores de **210 quads** cada, com UV própria para todos os seis painéis. São **1.596 faces quadriláteras** de couro distribuídas entre ambos os antebraços.
+- Existem **16 cordões cruzados** traseiros, todos com percurso inferior a **0,020 m**; oito guias finas de borda editáveis. As braçadeiras tubulares 0.9.12 e suas curvas antigas permanecem ocultas no Blender e fora do FBX.
+- Foram guardadas **cinco peças planas de molde de calça** como estudo oculto e não exportado: dois painéis dianteiros, dois traseiros e um cós. A calça vestida permanece a peça conectada v0.9.12 de **1.122 vértices / 1.086 faces**, sem alteração.
+- Nenhuma alteração em `unity/`, rigging, animações ou personagem jogável.
+
+### Julgamento visual
+
+**Progresso técnico e modelagem modular confirmados.** A vista frontal apresenta painéis de couro mais definidos e acabamento sem protuberâncias pontiagudas. A vista posterior corrigida revela a abertura traseira e a amarração em X ao longo do antebraço.
+
+**Não é um figurino aprovado:** a abertura posterior parece excessivamente profunda e os cordões ainda ficam visualmente pouco destacados. O couro continua rígido e precisa de aba interna/gusset, fechamento e aderência mais verossímeis. A estrutura de 2D da calça não é ainda uma calça costurada ou simulada. A região pélvica do tecido atual continua excessivamente anatômica.
+
+**Próxima prioridade:** experimentar uma tira interna de couro atrás dos cadarços, reduzir o destaque da abertura, revisar o fechamento na altura do punho e avançar de moldes planos para topologia independente de calça com volume e caimento adequados. O PR segue em rascunho; nenhum merge no `main`.
