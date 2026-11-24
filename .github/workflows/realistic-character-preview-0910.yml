@@ -70,6 +70,7 @@ jobs:
           assert m['rounded_pouch_count']==2 and m['pouch_gear_parts']>=10
           assert m['original_bracer_count']==2
           assert m['new_bracer_stitch_curves']>=2
+          assert m['max_bracer_stitch_m']<.027
           assert m['rigged'] is False and m['unity_character_replaced'] is False
           for fname in (
             'necromancer_realistic_0910.blend','necromancer_realistic_0910.fbx',
