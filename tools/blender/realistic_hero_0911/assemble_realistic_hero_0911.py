@@ -263,102 +263,105 @@ assert [digest(e) for e in eyes]==eye_hashes
 assert all(o.hide_render for o in old_stitches)
 assert p["prior"]["stage"]["components"]==1
 
-metadata={
- "stage":"0.9.11 bounded bracer-edge leather binding and reversible pelvic drape",
- "license":"CC0-1.0","bundle_version":"1.4.1",
- "base_collection":"Body Male - Realistic",
- "body_vertices":len(body.data.vertices),
- "body_faces":len(body.data.polygons),
- "body_hash_before":body_hash,"body_hash_after":digest(body),
- "original_eye_hashes_unchanged":[digest(e) for e in eyes]==eye_hashes,
- "connected_trouser_components":p["prior"]["stage"]["components"],
- "trouser_vertices":len(trousers.data.vertices),
- "trouser_faces":len(trousers.data.polygons),
- "trouser_shape_keys":[k.name for k in trousers.data.shape_keys.key_blocks],
- "pelvis_vertices_adjusted":len(changed),
- "original_bracer_count":len(guards),
- "leather_binding_objects":len(rim_objs),
- "binding_edge_counts":edge_counts,
- "max_binding_edge_length_m":round(max_rim_edge,5),
- "visible_guard_material_border_faces":visible_edge_faces,
- "guard_face_border_counts":guard_face_counts,
- "rejected_raised_rim_hidden":all(o.hide_render for o in [*rim_objs,*new_stitches]),
-  "new_guard_stitches":len(new_stitches),
- "max_guard_stitch_length_m":round(max_stitch,5),
- "old_guard_stitches_hidden":all(o.hide_render for o in old_stitches),
- "new_belt_keepers":len(belt_loops),
- "pouch_bodies_preserved":len(p["pouch_bodies"]),
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"Source bracer-boundary quads may still need artistic tailoring; no material UV production, full rig or facial reference. Original body meshes remain untouched."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-print("V0911_METADATA",json.dumps(metadata),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=22
-scene.cycles.use_denoising=True
-scene.render.image_settings.file_format="PNG"
-scene.render.resolution_percentage=100
-world=bpy.data.worlds.new("0911 | charcoal professional model review")
-world.use_nodes=True
-world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.17,1)
-world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.68
-scene.world=world
-for name,pos,power,size in (
- ("0911 | Key",(2.2,-3.5,4.2),630,4),
- ("0911 | Fill",(-2.8,-1.3,2.6),300,3.7),
- ("0911 | Rim",(-1.1,2.7,3.4),430,3.3)
-):
-    light=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,light)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    light.energy=power
-    light.shape="DISK"
-    light.size=size
-camdata=bpy.data.cameras.new("0911 | orthographic technical inspection")
-camera=bpy.data.objects.new("0911 | orthographic technical inspection",camdata)
-scene.collection.objects.link(camera)
-scene.camera=camera
-camdata.type="ORTHO"
-
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0911.blend"))
-for ob in list(scene.objects):
-    if ob.type!="CURVE" or ob.hide_render:continue
+# Import-only mode for optional downstream revision; default 0.9.11 unchanged.
+if os.environ.get('NECROMANCER_0911_BUILD_ONLY') != '1':
+    metadata={
+     "stage":"0.9.11 bounded bracer-edge leather binding and reversible pelvic drape",
+     "license":"CC0-1.0","bundle_version":"1.4.1",
+     "base_collection":"Body Male - Realistic",
+     "body_vertices":len(body.data.vertices),
+     "body_faces":len(body.data.polygons),
+     "body_hash_before":body_hash,"body_hash_after":digest(body),
+     "original_eye_hashes_unchanged":[digest(e) for e in eyes]==eye_hashes,
+     "connected_trouser_components":p["prior"]["stage"]["components"],
+     "trouser_vertices":len(trousers.data.vertices),
+     "trouser_faces":len(trousers.data.polygons),
+     "trouser_shape_keys":[k.name for k in trousers.data.shape_keys.key_blocks],
+     "pelvis_vertices_adjusted":len(changed),
+     "original_bracer_count":len(guards),
+     "leather_binding_objects":len(rim_objs),
+     "binding_edge_counts":edge_counts,
+     "max_binding_edge_length_m":round(max_rim_edge,5),
+     "visible_guard_material_border_faces":visible_edge_faces,
+     "guard_face_border_counts":guard_face_counts,
+     "rejected_raised_rim_hidden":all(o.hide_render for o in [*rim_objs,*new_stitches]),
+      "new_guard_stitches":len(new_stitches),
+     "max_guard_stitch_length_m":round(max_stitch,5),
+     "old_guard_stitches_hidden":all(o.hide_render for o in old_stitches),
+     "new_belt_keepers":len(belt_loops),
+     "pouch_bodies_preserved":len(p["pouch_bodies"]),
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"Source bracer-boundary quads may still need artistic tailoring; no material UV production, full rig or facial reference. Original body meshes remain untouched."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    print("V0911_METADATA",json.dumps(metadata),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=22
+    scene.cycles.use_denoising=True
+    scene.render.image_settings.file_format="PNG"
+    scene.render.resolution_percentage=100
+    world=bpy.data.worlds.new("0911 | charcoal professional model review")
+    world.use_nodes=True
+    world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.17,1)
+    world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.68
+    scene.world=world
+    for name,pos,power,size in (
+     ("0911 | Key",(2.2,-3.5,4.2),630,4),
+     ("0911 | Fill",(-2.8,-1.3,2.6),300,3.7),
+     ("0911 | Rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        light=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,light)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        light.energy=power
+        light.shape="DISK"
+        light.size=size
+    camdata=bpy.data.cameras.new("0911 | orthographic technical inspection")
+    camera=bpy.data.objects.new("0911 | orthographic technical inspection",camdata)
+    scene.collection.objects.link(camera)
+    scene.camera=camera
+    camdata.type="ORTHO"
+    
     bpy.ops.object.select_all(action="DESELECT")
-    ob.hide_set(False)
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active=ob
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for ob in list(scene.objects):
-    if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0911.blend"))
+    for ob in list(scene.objects):
+        if ob.type!="CURVE" or ob.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
         ob.hide_set(False)
         ob.select_set(True)
-assert len(bpy.context.selected_objects)>22
-bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0911.fbx"),
-    use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def render(name,pos,target,scale,res=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=res
-    camdata.ortho_scale=scale
-    camera.location=pos
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_0911",name,flush=True)
-for name,pos in (
- ("front",(0,-4.6,1.24)),
- ("side",(4.6,0,1.25)),
- ("back",(0,4.6,1.25)),
- ("threequarter",(3,-4,1.30))
-):render(name,pos,(0,0,1),2.27)
-render("bracer_front",(0,-2.3,1.11),(0,0,1.09),.80,(760,760))
-render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
-render("pelvic_front",(0,-2.8,1.01),(0,0,.99),.93,(760,760))
-render("belt_details",(1.5,-2.8,1.04),(0,0,1.045),.78,(760,760))
-print("SUCCESS_0911",flush=True)
+        bpy.context.view_layer.objects.active=ob
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in list(scene.objects):
+        if ob.type=="MESH" and not ob.hide_render and not ob.name.startswith("095 | stylized"):
+            ob.hide_set(False)
+            ob.select_set(True)
+    assert len(bpy.context.selected_objects)>22
+    bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0911.fbx"),
+        use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def render(name,pos,target,scale,res=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=res
+        camdata.ortho_scale=scale
+        camera.location=pos
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_0911",name,flush=True)
+    for name,pos in (
+     ("front",(0,-4.6,1.24)),
+     ("side",(4.6,0,1.25)),
+     ("back",(0,4.6,1.25)),
+     ("threequarter",(3,-4,1.30))
+    ):render(name,pos,(0,0,1),2.27)
+    render("bracer_front",(0,-2.3,1.11),(0,0,1.09),.80,(760,760))
+    render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
+    render("pelvic_front",(0,-2.8,1.01),(0,0,.99),.93,(760,760))
+    render("belt_details",(1.5,-2.8,1.04),(0,0,1.045),.78,(760,760))
+    print("SUCCESS_0911",flush=True)
+    
