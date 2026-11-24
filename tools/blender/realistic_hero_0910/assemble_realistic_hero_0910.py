@@ -246,11 +246,14 @@ original_guards=[o for o in bpy.context.scene.objects if
   o.type=="MESH" and o.name.startswith("095 |") and "dark leather forearm guard" in o.name]
 if len(original_guards)!=2:
     raise RuntimeError("Original anatomical forearm leather shell pair missing")
+# Decorative stitches are now short marks on ACTUAL existing mesh edges.
+# Earlier long Bézier paths unintentionally connected distant guard faces,
+# creating wire-like spikes in renders. Per-dash maximum is 2.7cm.
 bracer_stitches=[]
+bracer_dash_lengths=[]
 for guard in original_guards:
     guard.data.materials.clear()
     guard.data.materials.append(bracer_mat)
-    # Woven leather grain, not low-poly primitive shells.
     ns=bracer_mat.node_tree.nodes
     if ns.get("0910 | leather grain") is None:
         tex=ns.new("ShaderNodeTexNoise")
@@ -263,28 +266,39 @@ for guard in original_guards:
         links=bracer_mat.node_tree.links
         links.new(tex.outputs["Fac"],bump.inputs["Height"])
         links.new(bump.outputs["Normal"],ns.get("Principled BSDF").inputs["Normal"])
-    world=[guard.matrix_world@v.co for v in guard.data.vertices]
-    xmin,xmax=min(p.x for p in world),max(p.x for p in world)
-    zmin_guard,zmax_guard=min(p.z for p in world),max(p.z for p in world)
-    centre_x=(xmin+xmax)*.5
-    name="left" if centre_x<0 else "right"
-    for z_fraction in (.14,.85):
-        z=zmin_guard+(zmax_guard-zmin_guard)*z_fraction
-        pts=[]
-        # Sample a narrow horizontal strip on REAL leather vertices,
-        # anchored to the front side of the bracer (facing -Y).
-        for i in range(12):
-            x=xmin+(xmax-xmin)*(.10+.80*i/11)
-            hit,loc,norm,poly=guard.closest_point_on_mesh(
-                guard.matrix_world.inverted_safe()@Vector((x,-.28,z)))
-            if not hit:continue
-            worldhit=guard.matrix_world@loc
-            if abs(worldhit.z-z)>.055:continue
-            pts.append(worldhit+Vector((0,-.0015,0)))
-        if len(pts)>=7:
+    pworld=[guard.matrix_world@v.co for v in guard.data.vertices]
+    y_front=sorted(p.y for p in pworld)[int(len(pworld)*.34)]
+    zmin_guard,zmax_guard=min(p.z for p in pworld),max(p.z for p in pworld)
+    xmean=statistics.mean(p.x for p in pworld)
+    name="left" if xmean<0 else "right"
+    target_zs=[zmin_guard+(zmax_guard-zmin_guard)*a for a in (.26,.73)]
+    for pass_no,target_z in enumerate(target_zs):
+        edges=[]
+        for e in guard.data.edges:
+            i,j=e.vertices
+            a,b=pworld[i],pworld[j]
+            length=(a-b).length
+            center=(a+b)*.5
+            if (.003<length<.022 and abs(center.z-target_z)<.043
+                and center.y<y_front+.025
+                and abs(a.z-b.z)<.019):
+                edges.append((abs(center.z-target_z)+
+                              .12*abs(center.x-xmean),a,b,length))
+        edges.sort(key=lambda item:item[0])
+        selected=[]
+        for score,a,b,length in edges:
+            mid=(a+b)*.5
+            if all((mid-(p+q)*.5).length>.023 for p,q,_ in selected):
+                selected.append((a,b,length))
+                if len(selected)==4:break
+        for k,(a,b,length) in enumerate(selected):
+            offset=Vector((0,-.0013,0))
             bracer_stitches.append(curve_obj(
-                "0910 | "+name+" bracer leather stitch "+str(z_fraction),
-                pts,bracer_trim,.00065))
+                "0910 | "+name+" short guard stitch "+str(pass_no)+"."+str(k),
+                [a+offset,b+offset],bracer_trim,.00062,False))
+            bracer_dash_lengths.append(length)
+if not bracer_dash_lengths or max(bracer_dash_lengths)>.027:
+    raise RuntimeError("Leather stitch exceeded its actual short mesh edge")
 if len(bracer_stitches)<2:
     raise RuntimeError("Not enough real-surface bracer stitched contours")
 
@@ -324,6 +338,7 @@ metadata={
  "pouch_gear_parts":len(gear),
  "original_bracer_count":len(original_guards),
  "new_bracer_stitch_curves":len(bracer_stitches),
+ "max_bracer_stitch_m":round(max(bracer_dash_lengths),5),
  "rigged":False,"unity_character_replaced":False,
  "known_limitations":"Costumes/accessories are still procedural prototypes; no final character concept turnaround, full garment UV tailoring, rigging or animation."
 }
