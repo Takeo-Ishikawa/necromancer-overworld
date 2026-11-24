@@ -123,11 +123,24 @@ for sign,name in ((-1,"left"),(1,"right")):
     guide=[]
     for k in range(samples_per_side):
         z=.245+(.965-.245)*k/(samples_per_side-1)
-        origin=Vector((sign*.50,0,z))
+        # Search the outer cloth along X at multiple Y offsets; trouser
+        # knees do not stay centered at world Y=0 throughout the full leg.
         inward=Vector((-sign,0,0))
-        hit,loc,norm,face=obj.ray_cast(inv@origin,(inv.to_3x3()@inward).normalized())
+        hit=False
+        for y in (0,-.025,.025,-.05,.05,-.08,.08,-.12,.12,-.17,.17,-.24,.24):
+            origin=Vector((sign*.50,y,z))
+            found,loc,norm,face=obj.ray_cast(
+                inv@origin,(inv.to_3x3()@inward).normalized())
+            if found:
+                hit=True
+                break
         if not hit:
-            raise RuntimeError("Actual continuous trouser side ray miss: "+name+" z="+str(z))
+            # Project onto actual cloth surface as fallback for stations
+            # without a straight horizontal intersection.
+            found,loc,norm,face=obj.closest_point_on_mesh(
+                inv@Vector((sign*.18,0,z)))
+            if not found or sign*(obj.matrix_world@loc).x<.035:
+                raise RuntimeError("Garment projection failed on "+name+" z="+str(z))
         rays_hit+=1
         normal=(normal_matrix@norm).normalized()
         p=obj.matrix_world@loc+normal*.00115
