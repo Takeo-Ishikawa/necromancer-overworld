@@ -318,96 +318,99 @@ assert prior["stage"]["components"]==1
 assert all(x.hide_render for x in prior["seams"])
 assert all(x.hide_render for x in prior["stage"]["hidden_loft"])
 
-metadata={
- "stage":"0.9.10 garment full-length seams and rounded utility gear",
- "license":"CC0-1.0","bundle_version":"1.4.1",
- "base_collection":"Body Male - Realistic",
- "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
- "body_digest_before":body_before,"body_digest_after":digest(body),
- "original_eye_hashes_unchanged":[digest(x) for x in eyes]==eyes_before,
- "connected_garment_mesh_count":prior["stage"]["components"],
- "trousers_vertices":len(trousers.data.vertices),
- "trousers_faces":len(trousers.data.polygons),
- "side_seam_count":len(seams),
- "seam_control_points":profiles,
- "max_control_jump_m":round(jump_max,5),
- "hem_seam_endpoint_distances_m":ends,
- "prior_seams_hidden":all(x.hide_render for x in prior["seams"]),
- "previous_pouch_parts_hidden":len(archived_pouches),
- "rounded_pouch_count":len(pouch_bodies),
- "pouch_gear_parts":len(gear),
- "original_bracer_count":len(original_guards),
- "new_bracer_stitch_curves":len(bracer_stitches),
- "max_bracer_stitch_m":round(max(bracer_dash_lengths),5),
- "rigged":False,"unity_character_replaced":False,
- "known_limitations":"Costumes/accessories are still procedural prototypes; no final character concept turnaround, full garment UV tailoring, rigging or animation."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-print("V0910_METADATA",json.dumps(metadata),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=23
-scene.cycles.use_denoising=True
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("0910 | neutral studio")
-world.use_nodes=True
-world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.175,1)
-world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.65
-scene.world=world
-for name,pos,power,size in (
- ("0910 Key",(2.2,-3.5,4.2),650,4.0),
- ("0910 Fill",(-2.8,-1.3,2.6),280,3.6),
- ("0910 Rim",(-1.1,2.7,3.4),430,3.3)
-):
-    l=bpy.data.lights.new(name,"AREA")
-    ob=bpy.data.objects.new(name,l)
-    scene.collection.objects.link(ob)
-    ob.location=pos
-    l.energy=power
-    l.shape="DISK"
-    l.size=size
-cdata=bpy.data.cameras.new("0910 | orthographic views")
-camera=bpy.data.objects.new("0910 | orthographic views",cdata)
-scene.collection.objects.link(camera)
-cdata.type="ORTHO"
-scene.camera=camera
-
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0910.blend"))
-for o in list(scene.objects):
-    if o.type!="CURVE" or o.hide_render:continue
+# Stage-only import for version 0.9.11. Regular 0.9.10 remains unchanged.
+if os.environ.get('NECROMANCER_0910_BUILD_ONLY') != '1':
+    metadata={
+     "stage":"0.9.10 garment full-length seams and rounded utility gear",
+     "license":"CC0-1.0","bundle_version":"1.4.1",
+     "base_collection":"Body Male - Realistic",
+     "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
+     "body_digest_before":body_before,"body_digest_after":digest(body),
+     "original_eye_hashes_unchanged":[digest(x) for x in eyes]==eyes_before,
+     "connected_garment_mesh_count":prior["stage"]["components"],
+     "trousers_vertices":len(trousers.data.vertices),
+     "trousers_faces":len(trousers.data.polygons),
+     "side_seam_count":len(seams),
+     "seam_control_points":profiles,
+     "max_control_jump_m":round(jump_max,5),
+     "hem_seam_endpoint_distances_m":ends,
+     "prior_seams_hidden":all(x.hide_render for x in prior["seams"]),
+     "previous_pouch_parts_hidden":len(archived_pouches),
+     "rounded_pouch_count":len(pouch_bodies),
+     "pouch_gear_parts":len(gear),
+     "original_bracer_count":len(original_guards),
+     "new_bracer_stitch_curves":len(bracer_stitches),
+     "max_bracer_stitch_m":round(max(bracer_dash_lengths),5),
+     "rigged":False,"unity_character_replaced":False,
+     "known_limitations":"Costumes/accessories are still procedural prototypes; no final character concept turnaround, full garment UV tailoring, rigging or animation."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    print("V0910_METADATA",json.dumps(metadata),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=23
+    scene.cycles.use_denoising=True
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("0910 | neutral studio")
+    world.use_nodes=True
+    world.node_tree.nodes.get("Background").inputs["Color"].default_value=(.15,.15,.175,1)
+    world.node_tree.nodes.get("Background").inputs["Strength"].default_value=.65
+    scene.world=world
+    for name,pos,power,size in (
+     ("0910 Key",(2.2,-3.5,4.2),650,4.0),
+     ("0910 Fill",(-2.8,-1.3,2.6),280,3.6),
+     ("0910 Rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        l=bpy.data.lights.new(name,"AREA")
+        ob=bpy.data.objects.new(name,l)
+        scene.collection.objects.link(ob)
+        ob.location=pos
+        l.energy=power
+        l.shape="DISK"
+        l.size=size
+    cdata=bpy.data.cameras.new("0910 | orthographic views")
+    camera=bpy.data.objects.new("0910 | orthographic views",cdata)
+    scene.collection.objects.link(camera)
+    cdata.type="ORTHO"
+    scene.camera=camera
+    
     bpy.ops.object.select_all(action="DESELECT")
-    o.hide_set(False);o.select_set(True)
-    bpy.context.view_layer.objects.active=o
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for o in list(scene.objects):
-    if o.type=="MESH" and not o.hide_render and not o.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0910.blend"))
+    for o in list(scene.objects):
+        if o.type!="CURVE" or o.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
         o.hide_set(False);o.select_set(True)
-if len(bpy.context.selected_objects)<20:
-    raise RuntimeError("FBX lost required sculpt and accessory pieces")
-bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0910.fbx"),
-    use_selection=True,object_types={"MESH"},apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-
-def shot(name,location,target,scale,reso=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=reso
-    cdata.ortho_scale=scale
-    camera.location=location
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("V0910_RENDER",name,flush=True)
-for name,location in (
-    ("front",(0,-4.6,1.24)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3,-4,1.30))
-):shot(name,location,(0,0,1),2.27)
-shot("hip_front",(0,-2.8,1.01),(0,0,1.0),.90,(760,760))
-shot("pouch_threequarter",(1.5,-2.8,1.03),(0,0,1.045),.75,(760,760))
-shot("seam_side",(2.4,-.05,.67),(0,0,.65),1.06,(760,760))
-shot("bracer_detail",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
-print("SUCCESS_0910",flush=True)
+        bpy.context.view_layer.objects.active=o
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in list(scene.objects):
+        if o.type=="MESH" and not o.hide_render and not o.name.startswith("095 | stylized"):
+            o.hide_set(False);o.select_set(True)
+    if len(bpy.context.selected_objects)<20:
+        raise RuntimeError("FBX lost required sculpt and accessory pieces")
+    bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0910.fbx"),
+        use_selection=True,object_types={"MESH"},apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    
+    def shot(name,location,target,scale,reso=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=reso
+        cdata.ortho_scale=scale
+        camera.location=location
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("V0910_RENDER",name,flush=True)
+    for name,location in (
+        ("front",(0,-4.6,1.24)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3,-4,1.30))
+    ):shot(name,location,(0,0,1),2.27)
+    shot("hip_front",(0,-2.8,1.01),(0,0,1.0),.90,(760,760))
+    shot("pouch_threequarter",(1.5,-2.8,1.03),(0,0,1.045),.75,(760,760))
+    shot("seam_side",(2.4,-.05,.67),(0,0,.65),1.06,(760,760))
+    shot("bracer_detail",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
+    print("SUCCESS_0910",flush=True)
+    
