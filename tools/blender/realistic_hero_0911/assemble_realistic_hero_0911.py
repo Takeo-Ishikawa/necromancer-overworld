@@ -161,6 +161,36 @@ if len(rim_objs)!=4 or len(new_stitches)<8 or max_stitch>.006:
 if max_rim_edge>.04:
     raise RuntimeError("Oversized leather binding edge")
 
+# Real render inspection rejected the protruding boundary panels:
+# even source-anchored 6mm strips followed the jagged cloth perimeter and
+# produced pointed projections near the wrist. Keep the editable prototype
+# hidden; use a dark *face material border on the existing guard shell*.
+for ob in [*rim_objs,*new_stitches]:
+    ob.hide_render=True
+    ob.hide_set(True)
+visible_edge_faces=0
+guard_face_counts={}
+face_binding=make_mat("0911 | integrated leather cuff face border",
+                      (.058,.051,.060),.92)
+for guard in guards:
+    slot=len(guard.data.materials)
+    guard.data.materials.append(face_binding)
+    gverts=[guard.matrix_world@v.co for v in guard.data.vertices]
+    lower=min(v.z for v in gverts)
+    upper=max(v.z for v in gverts)
+    used=0
+    for f in guard.data.polygons:
+        pts=[gverts[j] for j in f.vertices]
+        z=sum(v.z for v in pts)/len(pts)
+        if z<lower+.028 or z>upper-.028:
+            f.material_index=slot
+            used+=1
+    guard_face_counts[guard.name]=used
+    visible_edge_faces+=used
+if visible_edge_faces<25:
+    raise RuntimeError("Too few integrated leather binding polygons")
+
+
 # Re-evaluate the same genuinely connected pants. The fourth optional
 # shape key is a small weighted Y-only Laplacian relaxation at the frontal
 # pelvic cloth surface, not a new body sculpt. Changes are reversible.
@@ -250,7 +280,10 @@ metadata={
  "leather_binding_objects":len(rim_objs),
  "binding_edge_counts":edge_counts,
  "max_binding_edge_length_m":round(max_rim_edge,5),
- "new_guard_stitches":len(new_stitches),
+ "visible_guard_material_border_faces":visible_edge_faces,
+ "guard_face_border_counts":guard_face_counts,
+ "rejected_raised_rim_hidden":all(o.hide_render for o in [*rim_objs,*new_stitches]),
+  "new_guard_stitches":len(new_stitches),
  "max_guard_stitch_length_m":round(max_stitch,5),
  "old_guard_stitches_hidden":all(o.hide_render for o in old_stitches),
  "new_belt_keepers":len(belt_loops),
