@@ -263,94 +263,97 @@ assert old["previous"]["p"]["prior"]["stage"]["components"]==1
 assert digest(body)==before
 assert [digest(e) for e in eyes]==before_eyes
 
-metadata={
- "stage":"0.9.13 anatomical leather panel cutting, rear laces, and separate hidden trouser patterns",
- "license":"CC0-1.0","source":"Body Male - Realistic Blender Studio v1.4.1",
- "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
- "body_hash_before":before,"body_hash_after":digest(body),
- "eye_hashes_unchanged":[digest(e) for e in eyes]==before_eyes,
- "source_full_cylinder_bracers_hidden":all(g.hide_render for g in source_guards),
- "original_095_guards_hidden":all(g.hide_render for g in old["guards"]),
- "leather_panel_count":len(panels),"leather_panels_per_arm":panels_by_side,
- "leather_panel_quads":panel_quads,"leather_panel_vertices":panel_vertices,
- "panel_uv_layers":[len(x.data.uv_layers) for x in panels],
- "rear_cross_lacing_count":len(back_laces),
- "rear_lacing_max_length_m":round(max(lengths),5),
- "leather_edge_stitch_guides":len(edge_guides),
- "source_arm_radius_reference":side_source_radii,
- "flat_2d_trouser_pattern_count":len(pattern_parts),
- "flat_patterns_hidden":all(x.hide_render for x in pattern_parts),
- "active_trouser_connected_meshes":old["previous"]["p"]["prior"]["stage"]["components"],
- "active_trouser_vertices":len(trousers.data.vertices),
- "active_trouser_faces":len(trousers.data.polygons),
- "active_trouser_shape_keys":len(trousers.data.shape_keys.key_blocks),
- "rigged":False,"unity_character_replaced":False,
- "limitations":"Three leather panels per arm are procedurally fitted, not hand-sculpted or simulated. Flat trousers are 2D pattern templates only, not sewn into wearable draped trousers."
-}
-(OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
-print("VALIDATED_0913",json.dumps(metadata),flush=True)
-
-scene=bpy.context.scene
-scene.render.engine="CYCLES"
-scene.cycles.device="CPU"
-scene.cycles.samples=22
-scene.cycles.use_denoising=True
-scene.render.resolution_percentage=100
-scene.render.image_settings.file_format="PNG"
-world=bpy.data.worlds.new("0913 | soft neutral professional studio")
-world.use_nodes=True
-world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.17,1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value=.68
-scene.world=world
-for name,pos,power,size in (
-    ("0913 | key",(2.2,-3.5,4.2),640,4.0),
-    ("0913 | fill",(-2.8,-1.3,2.6),305,3.7),
-    ("0913 | rim",(-1.1,2.7,3.4),430,3.3)
-):
-    light=bpy.data.lights.new(name,"AREA")
-    obj=bpy.data.objects.new(name,light)
-    scene.collection.objects.link(obj)
-    obj.location=pos
-    light.energy=power
-    light.shape="DISK"
-    light.size=size
-camdata=bpy.data.cameras.new("0913 | ortho inspection camera")
-camera=bpy.data.objects.new("0913 | ortho inspection camera",camdata)
-scene.collection.objects.link(camera)
-scene.camera=camera
-camdata.type="ORTHO"
-bpy.ops.object.select_all(action="DESELECT")
-bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0913.blend"))
-for obj in list(scene.objects):
-    if obj.type!="CURVE" or obj.hide_render:continue
+# Import-only mode for downstream leather and garment study.
+if os.environ.get('NECROMANCER_0913_BUILD_ONLY') != '1':
+    metadata={
+     "stage":"0.9.13 anatomical leather panel cutting, rear laces, and separate hidden trouser patterns",
+     "license":"CC0-1.0","source":"Body Male - Realistic Blender Studio v1.4.1",
+     "body_vertices":len(body.data.vertices),"body_faces":len(body.data.polygons),
+     "body_hash_before":before,"body_hash_after":digest(body),
+     "eye_hashes_unchanged":[digest(e) for e in eyes]==before_eyes,
+     "source_full_cylinder_bracers_hidden":all(g.hide_render for g in source_guards),
+     "original_095_guards_hidden":all(g.hide_render for g in old["guards"]),
+     "leather_panel_count":len(panels),"leather_panels_per_arm":panels_by_side,
+     "leather_panel_quads":panel_quads,"leather_panel_vertices":panel_vertices,
+     "panel_uv_layers":[len(x.data.uv_layers) for x in panels],
+     "rear_cross_lacing_count":len(back_laces),
+     "rear_lacing_max_length_m":round(max(lengths),5),
+     "leather_edge_stitch_guides":len(edge_guides),
+     "source_arm_radius_reference":side_source_radii,
+     "flat_2d_trouser_pattern_count":len(pattern_parts),
+     "flat_patterns_hidden":all(x.hide_render for x in pattern_parts),
+     "active_trouser_connected_meshes":old["previous"]["p"]["prior"]["stage"]["components"],
+     "active_trouser_vertices":len(trousers.data.vertices),
+     "active_trouser_faces":len(trousers.data.polygons),
+     "active_trouser_shape_keys":len(trousers.data.shape_keys.key_blocks),
+     "rigged":False,"unity_character_replaced":False,
+     "limitations":"Three leather panels per arm are procedurally fitted, not hand-sculpted or simulated. Flat trousers are 2D pattern templates only, not sewn into wearable draped trousers."
+    }
+    (OUT/"source_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+    print("VALIDATED_0913",json.dumps(metadata),flush=True)
+    
+    scene=bpy.context.scene
+    scene.render.engine="CYCLES"
+    scene.cycles.device="CPU"
+    scene.cycles.samples=22
+    scene.cycles.use_denoising=True
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="PNG"
+    world=bpy.data.worlds.new("0913 | soft neutral professional studio")
+    world.use_nodes=True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value=(.15,.15,.17,1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value=.68
+    scene.world=world
+    for name,pos,power,size in (
+        ("0913 | key",(2.2,-3.5,4.2),640,4.0),
+        ("0913 | fill",(-2.8,-1.3,2.6),305,3.7),
+        ("0913 | rim",(-1.1,2.7,3.4),430,3.3)
+    ):
+        light=bpy.data.lights.new(name,"AREA")
+        obj=bpy.data.objects.new(name,light)
+        scene.collection.objects.link(obj)
+        obj.location=pos
+        light.energy=power
+        light.shape="DISK"
+        light.size=size
+    camdata=bpy.data.cameras.new("0913 | ortho inspection camera")
+    camera=bpy.data.objects.new("0913 | ortho inspection camera",camdata)
+    scene.collection.objects.link(camera)
+    scene.camera=camera
+    camdata.type="ORTHO"
     bpy.ops.object.select_all(action="DESELECT")
-    obj.hide_set(False);obj.select_set(True)
-    bpy.context.view_layer.objects.active=obj
-    bpy.ops.object.convert(target="MESH")
-bpy.ops.object.select_all(action="DESELECT")
-for obj in list(scene.objects):
-    if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+    bpy.ops.wm.save_as_mainfile(filepath=str(OUT/"necromancer_realistic_0913.blend"))
+    for obj in list(scene.objects):
+        if obj.type!="CURVE" or obj.hide_render:continue
+        bpy.ops.object.select_all(action="DESELECT")
         obj.hide_set(False);obj.select_set(True)
-assert len(bpy.context.selected_objects)>23
-bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0913.fbx"),
-   use_selection=True,object_types={"MESH"},
-   apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
-def render(name,pos,target,scale,reso=(640,840)):
-    scene.render.resolution_x,scene.render.resolution_y=reso
-    camdata.ortho_scale=scale
-    camera.location=pos
-    camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
-    scene.render.filepath=str(OUT/("hero_"+name+".png"))
-    bpy.ops.render.render(write_still=True)
-    print("RENDER_0913",name,flush=True)
-for name,loc in (
-    ("front",(0,-4.6,1.24)),
-    ("side",(4.6,0,1.25)),
-    ("back",(0,4.6,1.25)),
-    ("threequarter",(3,-4,1.30))
-):render(name,loc,(0,0,1),2.27)
-render("bracer_front",(1.05,-2.3,1.13),(.52,0,1.07),.55,(760,760))
-render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
-render("bracer_back",(0,2.5,1.1),(0,0,1.09),.82,(760,760))
-render("rear_lacing",(1.07,2.05,1.13),(.52,0,1.08),.53,(760,760))
-print("SUCCESS_0913",flush=True)
+        bpy.context.view_layer.objects.active=obj
+        bpy.ops.object.convert(target="MESH")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in list(scene.objects):
+        if obj.type=="MESH" and not obj.hide_render and not obj.name.startswith("095 | stylized"):
+            obj.hide_set(False);obj.select_set(True)
+    assert len(bpy.context.selected_objects)>23
+    bpy.ops.export_scene.fbx(filepath=str(OUT/"necromancer_realistic_0913.fbx"),
+       use_selection=True,object_types={"MESH"},
+       apply_unit_scale=True,axis_forward="-Z",axis_up="Y")
+    def render(name,pos,target,scale,reso=(640,840)):
+        scene.render.resolution_x,scene.render.resolution_y=reso
+        camdata.ortho_scale=scale
+        camera.location=pos
+        camera.rotation_euler=(Vector(target)-camera.location).to_track_quat("-Z","Y").to_euler()
+        scene.render.filepath=str(OUT/("hero_"+name+".png"))
+        bpy.ops.render.render(write_still=True)
+        print("RENDER_0913",name,flush=True)
+    for name,loc in (
+        ("front",(0,-4.6,1.24)),
+        ("side",(4.6,0,1.25)),
+        ("back",(0,4.6,1.25)),
+        ("threequarter",(3,-4,1.30))
+    ):render(name,loc,(0,0,1),2.27)
+    render("bracer_front",(1.05,-2.3,1.13),(.52,0,1.07),.55,(760,760))
+    render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
+    render("bracer_back",(0,2.5,1.1),(0,0,1.09),.82,(760,760))
+    render("rear_lacing",(1.07,2.05,1.13),(.52,0,1.08),.53,(760,760))
+    print("SUCCESS_0913",flush=True)
+    
