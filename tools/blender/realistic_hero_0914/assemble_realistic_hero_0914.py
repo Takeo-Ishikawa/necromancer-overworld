@@ -342,6 +342,6 @@ shot("pants_front",(0,-2.8,.75),(0,0,.75),1.17,(760,760))
 for obj in patterns:
     obj.hide_render=False
     obj.hide_set(False)
-shot("pattern_3d_drafts",(2.48,-3.7,.68),(2.48,0,.65),1.36,(1000,760))
+shot("pattern_3d_drafts",(2.58,-3.7,.68),(2.58,0,.65),1.95,(1000,760))
 for obj in patterns:hide(obj)
 print("SUCCESS_0914",flush=True)
