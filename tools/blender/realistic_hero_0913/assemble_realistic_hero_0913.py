@@ -349,8 +349,8 @@ for name,loc in (
     ("back",(0,4.6,1.25)),
     ("threequarter",(3,-4,1.30))
 ):render(name,loc,(0,0,1),2.27)
-render("bracer_front",(0,-2.3,1.11),(0,0,1.09),.80,(760,760))
+render("bracer_front",(1.05,-2.3,1.13),(.52,0,1.07),.55,(760,760))
 render("bracer_threequarter",(2,-2.5,1.10),(.45,0,1.10),.86,(760,760))
 render("bracer_back",(0,2.5,1.1),(0,0,1.09),.82,(760,760))
-render("rear_lacing",(0,2.0,1.13),(0,0,1.08),.60,(760,760))
+render("rear_lacing",(1.07,2.05,1.13),(.52,0,1.08),.53,(760,760))
 print("SUCCESS_0913",flush=True)
